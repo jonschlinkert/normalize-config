@@ -2,6 +2,12 @@ const glob = require('globule');
 const log = require('verbalize');
 const _ = require('lodash');
 
+log.runner = 'normalize-config';
+
+log.writeln();
+log.subhead('starting', 'reading tasks.');
+log.writeln();
+
 
 /**
  * Returns true if both the `src` and `dest` values are empty
@@ -18,7 +24,7 @@ var isInvalidTarget = function(obj) {
 
 
 /**
- * Return an `orig` object with the original,
+ * Used for storing the `orig` object with the original,
  * unexpanded src and dest config values.
  *
  * @param   {Object}  obj  [description]
@@ -70,7 +76,7 @@ var expandFilePair = function(config, options) {
 
 var expandProps = function(data, options) {
   var files = [];
-  files.push(expandFilePair(data, options));
+  files.push(expandFilePair(data, options || {}));
   return files;
 };
 
@@ -92,7 +98,7 @@ var expandObject = function(config, options) {
 
   fp.src = _.flatten(_.values(config));
   fp.dest = _.keys(config)[0];
-  files.push(expandFilePair(fp, options));
+  files.push(expandFilePair(fp, options || {}));
   return files;
 };
 
@@ -115,7 +121,7 @@ var expandArray = function(config, options) {
   var files = [];
 
   config.forEach(function (filePair) {
-    files.push(expandObject(filePair, options));
+    files.push(expandObject(filePair, options || {}));
   });
   return files;
 };
@@ -184,10 +190,9 @@ var queueTargets = function(taskConfig, task) {
  */
 
 module.exports = function (config, options) {
-  options = options || {};
-  log.writeln();
+  options = options || {}, files = [];
 
-  var files = [];
+  // Run tasks
   _.forEach(config, function (taskConfig, task) {
     if ('options' in taskConfig) {
       options = taskConfig.options;
