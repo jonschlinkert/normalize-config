@@ -1,3 +1,10 @@
+/**
+ * normalize-config <https://github.com/jonschlinkert/normalize-config>
+ *
+ * Copyright (c) 2014 Jon Schlinkert, contributors.
+ * Licensed under the MIT license.
+ */
+
 const glob = require('globule');
 const log = require('verbalize');
 const _ = require('lodash');
@@ -7,6 +14,7 @@ log.runner = 'normalize-config';
 log.writeln();
 log.subhead('starting', 'reading tasks.');
 log.writeln();
+
 
 
 /**
@@ -48,7 +56,7 @@ var storeOrig = function(config) {
  *   `orig`: property with the original, unexpanded `src-dest` values
  *
  * @example: `{orig: {src: '', dest: ''}, src: [, ...], dest: ''}`
-  */
+ */
 
 var expandFilePair = function(config, options) {
   options = options || {};
@@ -61,6 +69,7 @@ var expandFilePair = function(config, options) {
     dest: config.dest || ''
   };
 };
+
 
 /**
  * Expand `src` when passed in directly, e.g.
