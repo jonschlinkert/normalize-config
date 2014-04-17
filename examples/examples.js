@@ -1,6 +1,7 @@
-const expand = require('../');
+const file = require('fs-utils');
+const normalize = require('../');
 
-var foo = {
+var config = {
   assemble: {
     options: {
       filter: 'isFile'
@@ -64,5 +65,42 @@ var foo = {
   }
 };
 
-var config = JSON.stringify(expand(foo), null, 2);
-// console.log(config);
+var result = normalize(config);
+file.writeJSONSync('tmp/result-concat.json', result);
+console.log(result);
+
+
+
+var config = {
+  'verb-cli': {
+    options: {
+      cwd: 'docs'
+    },
+    readme: {
+      src: ['README.tmpl.md'],
+      dest: 'README.md'
+    },
+    docs: {
+      src: ['**/*.tmpl.md'],
+      dest: './'
+    },
+    verbmd: {
+      options: {
+        cwd: '.'
+      },
+      src: ['.verbrc.md'],
+      dest: 'README.md'
+    },
+    foo: {
+      files: {
+        './': ['**/*.md']
+      }
+    }
+  }
+};
+
+normalize(config).forEach(function(fp) {
+  console.log(fp);
+})
+
+file.writeJSONSync('config.json', normalize(config));

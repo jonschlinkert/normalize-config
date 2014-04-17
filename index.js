@@ -1,19 +1,33 @@
-/**
- * normalize-config <https://github.com/jonschlinkert/normalize-config>
- *
- * Copyright (c) 2014 Jon Schlinkert, contributors.
- * Licensed under the MIT license.
- */
-
 const glob = require('globule');
-const log = require('verbalize');
 const _ = require('lodash');
 
-log.runner = 'normalize-config';
 
-log.writeln();
-log.subhead('starting', 'reading tasks.');
-log.writeln();
+/**
+ * Run a series of tasks.
+ *
+ * @param   {Object}  config   Series of tasks to run
+ * @param   {Object}  options  Options to pass to globule
+ * @return  {Array}  normalized tasks
+ */
+
+var normalize = module.exports = function (config, opts) {
+  config = _.cloneDeep(config);
+  var configs = [];
+
+  var options = _.extend({}, opts || {});
+
+  _.map(config, function (taskConfig, taskName) {
+    if ('options' in taskConfig) {
+      _.extend(options, taskConfig.options);
+      delete taskConfig.options;
+    }
+
+    var normalized = normalize.task(taskConfig, taskName, options);
+    configs.push(normalized);
+  });
+
+  return _.flatten(configs);
+};
 
 
 
@@ -26,22 +40,16 @@ log.writeln();
  * @return  {Boolean}
  */
 
-var isInvalidTarget = function(obj) {
+function isInvalidTarget(obj) {
   return _.isEmpty(obj.dest) && _.isEmpty(obj.src);
-};
+}
 
-
-/**
- * Used for storing the `orig` object with the original,
- * unexpanded src and dest config values.
- *
- * @param   {Object}  obj  [description]
- * @return  {Object}       [description]
- */
-
-var storeOrig = function(config) {
-  return {src: config.src, dest: config.dest};
-};
+function slashify(arr) {
+  arr = !Array.isArray(arr) ? [arr] : arr;
+  return arr.map(function(filepath) {
+    return filepath.replace(/\\/g, '/');
+  })
+}
 
 
 /**
@@ -56,20 +64,24 @@ var storeOrig = function(config) {
  *   `orig`: property with the original, unexpanded `src-dest` values
  *
  * @example: `{orig: {src: '', dest: ''}, src: [, ...], dest: ''}`
- */
+  */
 
-var expandFilePair = function(config, options) {
+normalize.expandFilePair = function(config, options) {
   options = options || {};
 
-  if (isInvalidTarget(config)) { return; }
+  if (isInvalidTarget(config)) {return;}
+
+  if('__globule__' in options) {
+    delete options.__globule__;
+    _.extend(config, options);
+  }
 
   return {
-    orig: storeOrig(config),
-    src: glob.find(config.src, options) || '',
+    orig: config,
+    src: slashify(glob.find(config)) || '',
     dest: config.dest || ''
   };
 };
-
 
 /**
  * Expand `src` when passed in directly, e.g.
@@ -83,10 +95,8 @@ var expandFilePair = function(config, options) {
  *   `[{orig: {src: '', dest: ''}, src: [, ...], dest: ''}]`
  */
 
-var expandProps = function(data, options) {
-  var files = [];
-  files.push(expandFilePair(data, options || {}));
-  return files;
+normalize.expandProps = function(config, options) {
+  return [].concat.apply(normalize.expandFilePair(config, options));
 };
 
 
@@ -102,13 +112,11 @@ var expandProps = function(data, options) {
  *   `[{orig: {src: '', dest: ''}, src: [, ...], dest: ''}]`
  */
 
-var expandObject = function(config, options) {
-  var files = [], fp = {};
-
-  fp.src = _.flatten(_.values(config));
-  fp.dest = _.keys(config)[0];
-  files.push(expandFilePair(fp, options || {}));
-  return files;
+normalize.expandObject = function(config, options) {
+  return [].concat.apply(normalize.expandFilePair({
+    src:  _.flatten(_.values(config)),
+    dest: _.keys(config)[0]
+  }, options));
 };
 
 
@@ -126,13 +134,11 @@ var expandObject = function(config, options) {
  *   `[{orig: {src: '', dest: ''}, src: [, ...], dest: ''}]`
  */
 
-var expandArray = function(config, options) {
-  var files = [];
-
-  config.forEach(function (filePair) {
-    files.push(expandObject(filePair, options || {}));
+normalize.expandArray = function(config, options) {
+  return config.map(function (obj) {
+    var opts = _.extend({__globule__: true}, options);
+    return [].concat.apply(normalize.target(obj, opts));
   });
-  return files;
 };
 
 
@@ -144,27 +150,25 @@ var expandArray = function(config, options) {
  * @return  {Object}  normalized files and options.
  */
 
-var normalizeTarget = function(targetConfig, target) {
-  var opts = {}, files = [];
-
-  log.inform('running', target);
+normalize.target = function(targetConfig, opts) {
+  opts = opts || {};
+  var files = [];
 
   if ('options' in targetConfig) {
-    // Copy over task level options.
     opts = _.cloneDeep(targetConfig.options);
     // Don't run task-level options as a target
     delete targetConfig.options;
   }
 
   if ('src' in targetConfig || 'dest' in targetConfig) {
-    files.push(expandProps(targetConfig, opts));
+    files = files.concat(normalize.expandProps(targetConfig, opts));
   } else if (_.isArray(targetConfig.files)) {
-    files.push(expandArray(targetConfig.files, opts));
+    files = files.concat(normalize.expandArray(targetConfig.files, opts));
   } else if (_.isObject(targetConfig.files)) {
-    files.push(expandObject(targetConfig.files, opts));
+    files = files.concat(normalize.expandObject(targetConfig.files, opts));
   }
 
-  return files;
+  return _.flatten(files);
 };
 
 
@@ -176,45 +180,8 @@ var normalizeTarget = function(targetConfig, target) {
  * @return  {Array}  normalized targets
  */
 
-var queueTargets = function(taskConfig, task) {
-  var files = [];
-
-  log.runner = task;
-  log.inform('running', task);
-
-  _.forEach(taskConfig, function (targetConfig, target) {
-    files.push(normalizeTarget(targetConfig, target));
+normalize.task = function(taskConfig, options) {
+  return _.map(taskConfig, function (targetConfig) {
+    return [].concat.apply(normalize.target(targetConfig, options || {}));
   });
-
-  return _.flatten(files);
-};
-
-
-/**
- * Run a series of tasks.
- *
- * @param   {Object}  config   Series of tasks to run
- * @param   {Object}  options  Options to pass to globule
- * @return  {Array}  normalized tasks
- */
-
-module.exports = function (config, options) {
-  options = options || {}, files = [];
-
-  // Run tasks
-  _.forEach(config, function (taskConfig, task) {
-    if ('options' in taskConfig) {
-      options = taskConfig.options;
-      delete taskConfig.options;
-    }
-
-    // Run targets
-    files.push(queueTargets(taskConfig, task));
-
-    // Done
-    log.done('done');
-    log.writeln();
-  });
-
-  return _.compact(_.flatten(files));
 };

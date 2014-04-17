@@ -1,7 +1,7 @@
 {
   "name": "normalize-config",
-  "description": "Normalize options, files objects, arrays and src-dest mappings for a series of targets in a series of tasks.",
-  "version": "0.1.0",
+  "description": "Normalize options, files objects, arrays and src-dest mappings into an object of tasks and targets.",
+  "version": "0.2.0",
   "homepage": "https://github.com/jonschlinkert/normalize-config",
   "author": {
     "name": "Jon Schlinkert",
@@ -21,12 +21,16 @@
     }
   ],
   "keywords": [
+    "config",
+    "configuration",
     "dest",
+    "destination",
     "expand",
     "files array",
     "files object",
     "files",
     "normalize",
+    "options",
     "src",
     "src-dest",
     "target",
@@ -37,15 +41,15 @@
     "node": ">=0.8"
   },
   "scripts": {
-    "test": "mocha -R test"
+    "test": "mocha -R spec"
   },
   "dependencies": {
-    "verbalize": "~0.1.2",
-    "lodash": "~2.4.1",
-    "globule": "~0.2.0"
+    "globule": "~0.2.0",
+    "lodash": "~2.4.1"
   },
   "devDependencies": {
     "verb": "~0.2.0",
-    "chai": "~1.9.1"
+    "chai": "~1.9.1",
+    "fs-utils": "~0.4.0"
   }
 }
