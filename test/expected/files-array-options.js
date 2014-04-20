@@ -1,0 +1,97 @@
+module.exports = [{
+  src: ['a/x.js'],
+  dest: 'public/txt/a/x.txt'
+}, {
+  src: ['a/y.js'],
+  dest: 'public/txt/a/y.txt'
+}, {
+  src: ['b/x.js'],
+  dest: 'public/txt/b/x.txt'
+}, {
+  src: ['b/y.js'],
+  dest: 'public/txt/b/y.txt'
+}, {
+  src: ['b/z.js'],
+  dest: 'public/txt/b/z.txt'
+}, {
+  src: ['c/x.js'],
+  dest: 'public/txt/c/x.txt'
+}, {
+  src: ['c/y.js'],
+  dest: 'public/txt/c/y.txt'
+}, {
+  src: ['config.js'],
+  dest: 'public/txt/config.txt'
+}, {
+  orig: {
+    mapping: true,
+    cwd: 'test/fixtures/',
+    src: ['**/*.js'],
+    dest: './public/txt/',
+    ext: '.txt'
+  }
+}, {
+  src: ['a/x.js'],
+  dest: 'public/js/a/x.js'
+}, {
+  src: ['a/y.js'],
+  dest: 'public/js/a/y.js'
+}, {
+  src: ['b/x.js'],
+  dest: 'public/js/b/x.js'
+}, {
+  src: ['b/y.js'],
+  dest: 'public/js/b/y.js'
+}, {
+  src: ['b/z.js'],
+  dest: 'public/js/b/z.js'
+}, {
+  src: ['c/x.js'],
+  dest: 'public/js/c/x.js'
+}, {
+  src: ['c/y.js'],
+  dest: 'public/js/c/y.js'
+}, {
+  src: ['config.js'],
+  dest: 'public/js/config.js'
+}, {
+  orig: {
+    mapping: true,
+    cwd: 'test/fixtures/',
+    src: ['**/*.js'],
+    dest: './public/js/',
+    ext: '.js'
+  }
+}, {
+  src: ['a/x.js'],
+  dest: 'assets/txt/a/x.txt'
+}, {
+  src: ['a/y.js'],
+  dest: 'assets/txt/a/y.txt'
+}, {
+  src: ['b/x.js'],
+  dest: 'assets/txt/b/x.txt'
+}, {
+  src: ['b/y.js'],
+  dest: 'assets/txt/b/y.txt'
+}, {
+  src: ['b/z.js'],
+  dest: 'assets/txt/b/z.txt'
+}, {
+  src: ['c/x.js'],
+  dest: 'assets/txt/c/x.txt'
+}, {
+  src: ['c/y.js'],
+  dest: 'assets/txt/c/y.txt'
+}, {
+  src: ['config.js'],
+  dest: 'assets/txt/config.txt'
+}, {
+  orig: {
+    mapping: true,
+    cwd: 'test/fixtures/',
+    src: ['**/*.js'],
+    dest: './assets/txt/',
+    ext: '.txt'
+  }
+}];

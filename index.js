@@ -1,5 +1,7 @@
 const glob = require('globule');
 const _ = require('lodash');
+const utils = require('./lib/utils');
+
 
 
 /**
@@ -10,46 +12,63 @@ const _ = require('lodash');
  * @return  {Array}  normalized tasks
  */
 
-var normalize = module.exports = function (config, opts) {
-  config = _.cloneDeep(config);
-  var configs = [];
+function normalize (configObject) {
+  var config = _.cloneDeep(configObject);
 
-  var options = _.extend({}, opts || {});
-
-  _.map(config, function (taskConfig, taskName) {
-    if ('options' in taskConfig) {
-      _.extend(options, taskConfig.options);
-      delete taskConfig.options;
-    }
-
-    var normalized = normalize.task(taskConfig, taskName, options);
-    configs.push(normalized);
-  });
-
-  return _.flatten(configs);
-};
+  return _.flatten(_.map(config, function (taskConfig) {
+    var taskOpts = _.extend({}, taskConfig.options);
+    return [].concat.apply(normalize.task(taskConfig, taskOpts));
+  }));
+}
 
 
 
 /**
- * Returns true if both the `src` and `dest` values are empty
- * or undefined. This means it's probably the options object
- * or a malformed files config object.
+ * Queue all of the normalized targets for a task.
  *
- * @param   {Object}   obj  The config object
- * @return  {Boolean}
+ * @param   {Object}  taskConfig  The targets and options for a task.
+ * @param   {String}  task        The name of the task
+ * @return  {Array}  normalized targets
  */
 
-function isInvalidTarget(obj) {
-  return _.isEmpty(obj.dest) && _.isEmpty(obj.src);
-}
+normalize.task = function(config) {
+  var taskConfig = _.extend({}, config);
+  var taskOpts = {};
 
-function slashify(arr) {
-  arr = !Array.isArray(arr) ? [arr] : arr;
-  return arr.map(function(filepath) {
-    return filepath.replace(/\\/g, '/');
-  })
-}
+  if ('options' in config) {
+    _.extend(taskOpts, config.options);
+  }
+
+  return _.map(taskConfig, function (targetConfig) {
+    return normalize.target(targetConfig, taskOpts);
+  });
+};
+
+
+/**
+ * Normalize the files and options for each target
+ *
+ * @param   {Object}  config  The config object with files and options.
+ * @param   {String}  target  The name of the current target
+ * @return  {Object}  normalized files and options.
+ */
+
+normalize.target = function(targetConfig, taskOpts) {
+  var targetOpts = _.extend({}, targetConfig.options);
+  var options = _.extend({}, taskOpts, targetOpts);
+
+  var result = [];
+
+  if (_.isArray(targetConfig.files)) {
+    result = normalize.filesArray(targetConfig.files, options);
+  } else if (_.isObject(targetConfig.files)) {
+    result = normalize.filesObject(targetConfig.files, options);
+  } else {
+    result = normalize.filePair(targetConfig, options);
+  }
+
+  return result;
+};
 
 
 /**
@@ -66,37 +85,40 @@ function slashify(arr) {
  * @example: `{orig: {src: '', dest: ''}, src: [, ...], dest: ''}`
   */
 
-normalize.expandFilePair = function(config, options) {
-  options = options || {};
+normalize.filePair = function(targetConfig, options) {
+  var config = _.cloneDeep(targetConfig);
+  var orig = config, files = [];
+  var siftedConfig = utils.sift(config).config;
+  var siftedOptions = utils.sift(config).options;
 
-  if (isInvalidTarget(config)) {return;}
+  _.extend(siftedConfig, utils.sift(options).config);
+  _.extend(siftedOptions, utils.sift(options).options);
 
-  if('__globule__' in options) {
-    delete options.__globule__;
-    _.extend(config, options);
+  if (!_.isEmpty(options)) {
+    _.extend(orig, {options: options});
   }
 
-  return {
-    orig: config,
-    src: slashify(glob.find(config)) || '',
-    dest: config.dest || ''
+  var result = {
+    orig: orig,
+    options: _.defaults(siftedOptions, options)
   };
-};
 
-/**
- * Expand `src` when passed in directly, e.g.
- *
- *   `{src: '', dest: ''}`
- *
- * @param   {Object}  data     Object with `src` and/or `dest` properties
- * @param   {Object}  options to pass to globule
- * @return  {Object}
- *
- *   `[{orig: {src: '', dest: ''}, src: [, ...], dest: ''}]`
- */
+  if ('mapping' in siftedOptions) {
+    files = files.concat(glob.findMapping(siftedConfig));
+  } else {
+    result.src = glob.find(siftedConfig);
+    if (config.dest) {
+      result.dest = config.dest;
+    }
+    if (result.src.length === 0) {
+      delete result.src;
+    }
+  }
 
-normalize.expandProps = function(config, options) {
-  return [].concat.apply(normalize.expandFilePair(config, options));
+  delete result.options;
+
+  files = files.concat(result);
+  return _.flatten(files);
 };
 
 
@@ -112,11 +134,14 @@ normalize.expandProps = function(config, options) {
  *   `[{orig: {src: '', dest: ''}, src: [, ...], dest: ''}]`
  */
 
-normalize.expandObject = function(config, options) {
-  return [].concat.apply(normalize.expandFilePair({
-    src:  _.flatten(_.values(config)),
-    dest: _.keys(config)[0]
-  }, options));
+normalize.filesObject = function(config, options) {
+  var filesObjects = [];
+
+  for (var prop in config) {
+    filesObjects.push({src: config[prop], dest: prop});
+  }
+
+  return _.flatten(normalize.filesArray(filesObjects, options));
 };
 
 
@@ -134,54 +159,11 @@ normalize.expandObject = function(config, options) {
  *   `[{orig: {src: '', dest: ''}, src: [, ...], dest: ''}]`
  */
 
-normalize.expandArray = function(config, options) {
-  return config.map(function (obj) {
-    var opts = _.extend({__globule__: true}, options);
-    return [].concat.apply(normalize.target(obj, opts));
-  });
+normalize.filesArray = function(config, options) {
+  return _.flatten(_.map(config, function (targetConfig) {
+    return normalize.filePair(targetConfig, options);
+  }));
 };
 
 
-/**
- * Normalize the files and options for each target
- *
- * @param   {Object}  config  The config object with files and options.
- * @param   {String}  target  The name of the current target
- * @return  {Object}  normalized files and options.
- */
-
-normalize.target = function(targetConfig, opts) {
-  opts = opts || {};
-  var files = [];
-
-  if ('options' in targetConfig) {
-    opts = _.cloneDeep(targetConfig.options);
-    // Don't run task-level options as a target
-    delete targetConfig.options;
-  }
-
-  if ('src' in targetConfig || 'dest' in targetConfig) {
-    files = files.concat(normalize.expandProps(targetConfig, opts));
-  } else if (_.isArray(targetConfig.files)) {
-    files = files.concat(normalize.expandArray(targetConfig.files, opts));
-  } else if (_.isObject(targetConfig.files)) {
-    files = files.concat(normalize.expandObject(targetConfig.files, opts));
-  }
-
-  return _.flatten(files);
-};
-
-
-/**
- * Queue all of the normalized targets for a task.
- *
- * @param   {Object}  taskConfig  The targets and options for a task.
- * @param   {String}  task        The name of the task
- * @return  {Array}  normalized targets
- */
-
-normalize.task = function(taskConfig, options) {
-  return _.map(taskConfig, function (targetConfig) {
-    return [].concat.apply(normalize.target(targetConfig, options || {}));
-  });
-};
+module.exports = normalize;

@@ -46,6 +46,9 @@ node_modules
 bower_components
 vendor
 
+docs
+examples
+
 # General folders and files to ignore
 _gh_pages
 tmp

@@ -1,7 +1,7 @@
 {
   "name": "normalize-config",
   "description": "Normalize options, files objects, arrays and src-dest mappings into an object of tasks and targets.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://github.com/jonschlinkert/normalize-config",
   "author": {
     "name": "Jon Schlinkert",
@@ -50,6 +50,7 @@
   "devDependencies": {
     "verb": "~0.2.0",
     "chai": "~1.9.1",
-    "fs-utils": "~0.4.0"
+    "fs-utils": "~0.4.0",
+    "js-beautify": "~1.4.2"
   }
 }
