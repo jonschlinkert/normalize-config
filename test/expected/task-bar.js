@@ -1,18 +1,9 @@
 module.exports = [
   [{
     orig: {
-      task: false,
-      options: {
-        task: false
-      }
-    }
-  }],
-  [{
-    orig: {
       src: ['test/fixtures/a/*.js'],
       dest: './a',
       options: {
-        task: false,
         target: true
       }
     },
@@ -23,7 +14,6 @@ module.exports = [
       src: ['test/fixtures/b/*.js'],
       dest: './b',
       options: {
-        task: false,
         target: true
       }
     },
@@ -37,7 +27,6 @@ module.exports = [
       src: ['test/fixtures/c/*.js'],
       dest: './c',
       options: {
-        task: false,
         target: true
       }
     },
@@ -56,10 +45,7 @@ module.exports = [
       cwd: 'test/fixtures/a',
       src: ['*.md'],
       dest: 'one/',
-      ext: '.html',
-      options: {
-        task: false
-      }
+      ext: '.html'
     }
   }, {
     src: ['a.md'],
@@ -73,10 +59,7 @@ module.exports = [
       cwd: 'test/fixtures/b',
       src: ['*.md'],
       dest: 'two/',
-      ext: '.html',
-      options: {
-        task: false
-      }
+      ext: '.html'
     }
   }, {
     src: ['a.md'],
@@ -90,10 +73,7 @@ module.exports = [
       cwd: 'test/fixtures/c',
       src: ['*.md'],
       dest: 'three/',
-      ext: '.html',
-      options: {
-        task: false
-      }
+      ext: '.html'
     }
   }],
   [{
@@ -110,7 +90,6 @@ module.exports = [
       dest: 'one/',
       ext: '.md',
       options: {
-        task: false,
         prefixBase: true
       }
     }
@@ -125,7 +104,6 @@ module.exports = [
       dest: 'two/',
       ext: '.md',
       options: {
-        task: false,
         prefixBase: true
       }
     }
@@ -141,7 +119,6 @@ module.exports = [
       dest: 'three/',
       ext: '.md',
       options: {
-        task: false,
         prefixBase: true
       }
     }

@@ -57,13 +57,17 @@ normalize.target = function(targetConfig, taskOpts) {
   var targetOpts = _.extend({}, targetConfig.options);
   var options = _.extend({}, taskOpts, targetOpts);
 
+  var result = [];
+
   if (_.isArray(targetConfig.files)) {
-    return normalize.filesArray(targetConfig.files, options);
+    result = normalize.filesArray(targetConfig.files, options);
   } else if (_.isObject(targetConfig.files)) {
-    return normalize.filesObject(targetConfig.files, options);
+    result = normalize.filesObject(targetConfig.files, options);
   } else {
-    return normalize.filePair(targetConfig, options);
+    result = normalize.filePair(targetConfig, options);
   }
+
+  return result;
 };
 
 
@@ -90,8 +94,6 @@ normalize.filePair = function(targetConfig, options) {
   _.extend(siftedConfig, utils.sift(options).config);
   _.extend(siftedOptions, utils.sift(options).options);
 
-  // console.log(siftedConfig)
-
   if (!_.isEmpty(options)) {
     _.extend(orig, {options: options});
   }
@@ -102,7 +104,7 @@ normalize.filePair = function(targetConfig, options) {
   };
 
   if ('mapping' in siftedOptions) {
-    files.push(glob.findMapping(siftedConfig));
+    files = files.concat(glob.findMapping(siftedConfig));
   } else {
     result.src = glob.find(siftedConfig);
     if (config.dest) {
@@ -112,9 +114,10 @@ normalize.filePair = function(targetConfig, options) {
       delete result.src;
     }
   }
+
   delete result.options;
 
-  files.push(result);
+  files = files.concat(result);
   return _.flatten(files);
 };
 
