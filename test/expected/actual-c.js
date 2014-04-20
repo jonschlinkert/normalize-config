@@ -1,4 +1,4 @@
-module.exports = [ { orig: { src: [ 'test/fixtures/**/*.coffee' ], dest: './' },
+module.exports = [ { orig: { src: [ 'test/fixtures/**/*.coffee' ], dest: './', options: {} },
     src: 
      [ 'test/fixtures/a/m.coffee',
        'test/fixtures/c/d.coffee',

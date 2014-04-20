@@ -3,7 +3,8 @@ module.exports = [ { orig:
        src: [ '*.hbs' ],
        dest: 'one/',
        ext: '.md',
-       prefixBase: true },
+       prefixBase: true,
+       options: { prefixBase: true } },
     src: [ 'test/fixtures/a/d.hbs', 'test/fixtures/a/e.hbs' ],
     dest: 'one/' },
   { orig: 
@@ -11,7 +12,8 @@ module.exports = [ { orig:
        src: [ '*.hbs' ],
        dest: 'two/',
        ext: '.md',
-       prefixBase: true },
+       prefixBase: true,
+       options: { prefixBase: true } },
     src: [ 'test/fixtures/b/f.hbs' ],
     dest: 'two/' },
   { orig: 
@@ -19,6 +21,7 @@ module.exports = [ { orig:
        src: [ '*.hbs' ],
        dest: 'three/',
        ext: '.md',
-       prefixBase: true },
+       prefixBase: true,
+       options: { prefixBase: true } },
     src: [ 'test/fixtures/c/g.hbs' ],
     dest: 'three/' } ];
