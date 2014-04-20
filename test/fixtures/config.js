@@ -3,28 +3,25 @@ module.exports = {
     options: {
       process: true
     },
-    a: {
+    alpha: {
       src: 'test/fixtures/a/*.md',
       one: 'two',
       three: 'four',
       dest: 'combined.md'
     },
-    b: {
+    beta: {
       options: {copy: true, process: false},
       src: ['test/fixtures/b/*.txt'],
       dest: './combined.txt'
     },
-    c: {
+    gamma: {
       files: {
         './': ['test/fixtures/**/*.coffee']
       }
     }
   },
   bar: {
-    options: {
-      task: false
-    },
-    d: {
+    pi: {
       options: {
         target: true
       },
@@ -34,14 +31,14 @@ module.exports = {
         './c': ['test/fixtures/c/*.js']
       }
     },
-    e: {
+    mu: {
       files: [
         { mapping: true, cwd: 'test/fixtures/a', src: ['*.md'], dest: 'one/', ext: '.html' },
         { mapping: true, cwd: 'test/fixtures/b', src: ['*.md'], dest: 'two/', ext: '.html' },
         { mapping: true, cwd: 'test/fixtures/c', src: ['*.md'], dest: 'three/', ext: '.html' }
       ]
     },
-    f: {
+    epsilon: {
       options: {
         prefixBase: true
       },

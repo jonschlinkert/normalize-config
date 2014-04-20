@@ -1,7 +1,8 @@
 const file = require('fs-utils');
+const glob = require('globule');
 const normalize = require('../');
 
-var config = {
+var config1 = {
   assemble: {
     options: {
       filter: 'isFile'
@@ -65,13 +66,13 @@ var config = {
   }
 };
 
-var result = normalize(config);
+var result = normalize(config1);
 file.writeJSONSync('tmp/result-concat.json', result);
 console.log(result);
 
 
 
-var config = {
+var config2 = {
   'verb-cli': {
     options: {
       cwd: 'docs'
@@ -99,8 +100,42 @@ var config = {
   }
 };
 
-normalize(config).forEach(function(fp) {
+normalize(config2).forEach(function(fp) {
   console.log(fp);
 })
 
-file.writeJSONSync('config.json', normalize(config));
+file.writeJSONSync('config2.json', normalize(config2));
+
+
+// var normalized = normalize.target({
+//   options: {
+//     mapping: true,
+//     // flatten: true,
+//     prefixBase: true,
+//     ext: '.txt',
+//     cwd: 'test/fixtures'
+//   },
+//   files: {
+//     './': ['**/*.js']
+//   }
+// });
+
+// console.log(JSON.stringify(normalized, null, 2));
+
+
+
+
+// var options = {
+//   // flatten: true,
+//   cwd: 'test/fixtures',
+//   src: '**/*',
+//   filter: 'isFile',
+//   ext: '.txt',
+//   // destBase: 'foo',
+//   prefixBase: true
+// };
+
+
+// var foo = glob.findMapping(options);
+
+// console.log(foo);

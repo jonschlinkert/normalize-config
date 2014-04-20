@@ -50,6 +50,7 @@
   "devDependencies": {
     "verb": "~0.2.0",
     "chai": "~1.9.1",
-    "fs-utils": "~0.4.0"
+    "fs-utils": "~0.4.0",
+    "js-beautify": "~1.4.2"
   }
 }

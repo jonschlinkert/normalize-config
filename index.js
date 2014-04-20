@@ -12,10 +12,10 @@ const utils = require('./lib/utils');
  * @return  {Array}  normalized tasks
  */
 
-function normalize (config) {
-  var obj = _.cloneDeep(config);
+function normalize (configObject) {
+  var config = _.cloneDeep(configObject);
 
-  return _.flatten(_.map(obj, function (taskConfig) {
+  return _.flatten(_.map(config, function (taskConfig) {
     var taskOpts = _.extend({}, taskConfig.options);
     return [].concat.apply(normalize.task(taskConfig, taskOpts));
   }));
@@ -31,9 +31,13 @@ function normalize (config) {
  * @return  {Array}  normalized targets
  */
 
-normalize.task = function(config, options) {
+normalize.task = function(config) {
   var taskConfig = _.extend({}, config);
-  var taskOpts = _.extend({}, options);
+  var taskOpts = {};
+
+  if ('options' in config) {
+    _.extend(taskOpts, config.options);
+  }
 
   return _.map(taskConfig, function (targetConfig) {
     return normalize.target(targetConfig, taskOpts);
@@ -53,14 +57,12 @@ normalize.target = function(targetConfig, taskOpts) {
   var targetOpts = _.extend({}, targetConfig.options);
   var options = _.extend({}, taskOpts, targetOpts);
 
-  if ('src' in targetConfig || 'dest' in targetConfig) {
-    return normalize.filePair(targetConfig, options);
-  } else if (_.isArray(targetConfig.files)) {
+  if (_.isArray(targetConfig.files)) {
     return normalize.filesArray(targetConfig.files, options);
   } else if (_.isObject(targetConfig.files)) {
     return normalize.filesObject(targetConfig.files, options);
   } else {
-    return _.extend({}, {options: taskOpts});
+    return normalize.filePair(targetConfig, options);
   }
 };
 
@@ -79,37 +81,41 @@ normalize.target = function(targetConfig, taskOpts) {
  * @example: `{orig: {src: '', dest: ''}, src: [, ...], dest: ''}`
   */
 
-normalize.filePair = function(config, options) {
-  // config = utils.arrayify(config);
-  var arr = [];
+normalize.filePair = function(targetConfig, options) {
+  var config = _.cloneDeep(targetConfig);
+  var orig = config, files = [];
+  var siftedConfig = utils.sift(config).config;
+  var siftedOptions = utils.sift(config).options;
 
-  // console.log(config)
+  _.extend(siftedConfig, utils.sift(options).config);
+  _.extend(siftedOptions, utils.sift(options).options);
 
-  // config.forEach(function(configObj) {
-  //   var obj = _.cloneDeep(configObj);
-  //   var sifted = utils.siftOptions(configObj);
+  // console.log(siftedConfig)
 
-  //   // if (isInvalidTarget(obj)) {return;}
+  if (!_.isEmpty(options)) {
+    _.extend(orig, {options: options});
+  }
 
-  //   var result = {
-  //     orig: configObj,
-  //     options: _.defaults(sifted.options, options)
-  //   };
+  var result = {
+    orig: orig,
+    options: _.defaults(siftedOptions, options)
+  };
 
-  //   if ('mapping' in sifted.options) {
-  //     glob.findMapping(sifted.config).map(function(ea) {
-  //       _.extend(result, ea);
-  //     });
-  //   } else {
-  //     _.extend(result, {
-  //       src: glob.find(sifted.config),
-  //       dest: obj.dest
-  //     });
-  //   }
+  if ('mapping' in siftedOptions) {
+    files.push(glob.findMapping(siftedConfig));
+  } else {
+    result.src = glob.find(siftedConfig);
+    if (config.dest) {
+      result.dest = config.dest;
+    }
+    if (result.src.length === 0) {
+      delete result.src;
+    }
+  }
+  delete result.options;
 
-  //   arr.push(result);
-  // });
-  return arr;
+  files.push(result);
+  return _.flatten(files);
 };
 
 
@@ -126,13 +132,13 @@ normalize.filePair = function(config, options) {
  */
 
 normalize.filesObject = function(config, options) {
-  var arr = [];
+  var filesObjects = [];
 
   for (var prop in config) {
-    arr.push({src: config[prop], dest: prop});
+    filesObjects.push({src: config[prop], dest: prop});
   }
 
-  return normalize.filePair(arr, options);
+  return _.flatten(normalize.filesArray(filesObjects, options));
 };
 
 
@@ -151,9 +157,9 @@ normalize.filesObject = function(config, options) {
  */
 
 normalize.filesArray = function(config, options) {
-  return _.map(config, function (obj) {
-    return normalize.filePair(obj, options);
-  });
+  return _.flatten(_.map(config, function (targetConfig) {
+    return normalize.filePair(targetConfig, options);
+  }));
 };
 
 
