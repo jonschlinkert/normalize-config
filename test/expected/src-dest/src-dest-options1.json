@@ -1,0 +1,27 @@
+{
+  "orig": {
+    "options": {
+      "flatten": true
+    },
+    "src": "test/fixtures/a/*.js",
+    "dest": "dist/"
+  },
+  "files": [
+    {
+      "src": [
+        "test/fixtures/a/x.js",
+        "test/fixtures/a/y.js"
+      ],
+      "dest": "dist/",
+      "orig": {
+        "options": {
+          "flatten": true
+        },
+        "src": [
+          "test/fixtures/a/*.js"
+        ],
+        "dest": "dist/"
+      }
+    }
+  ]
+}
