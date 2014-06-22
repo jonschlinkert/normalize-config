@@ -65,7 +65,7 @@ function siftKeys(config) {
  *
  * **Params:**
  *
- * @param  {Object} `config`
+ * @param  {Object} `config` The config object to be normalized.
  * @return {Object}
  */
 

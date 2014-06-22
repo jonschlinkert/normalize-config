@@ -1,6 +1,6 @@
 {
   "name": "normalize-config",
-  "description": "Normalize any combination of src-dest mappings, files arrays, files objects and options into a consistent format.",
+  "description": "Normalize a declarative configuration with any combination of src-dest mappings, files arrays, files objects and options into a consistent format. Uses globule to expand glob patterns and rte for dynamically generating destination paths. Inspired by Grunt's `normalizeMultiTaskFiles` method.",
   "version": "0.3.0",
   "homepage": "https://github.com/jonschlinkert/normalize-config",
   "author": {

@@ -2,9 +2,9 @@ module.exports = {
   orig: {
     options: { expand: true },
     files:
-      { a: [ 'test/fixtures/a/*.js' ],
-        b: [ 'test/fixtures/b/*.js' ],
-        c: [ 'test/fixtures/c/*.js' ] } },
+      { 'a/': [ 'test/fixtures/a/*.js' ],
+        'b/': [ 'test/fixtures/b/*.js' ],
+        'c/': [ 'test/fixtures/c/*.js' ] } },
   files: [
     { src: [ 'test/fixtures/a/x.js' ],
       dest: 'a/test/fixtures/a/x.js',
