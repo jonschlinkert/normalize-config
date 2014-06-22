@@ -1,7 +1,7 @@
 {
   "name": "normalize-config",
-  "description": "Normalize options, files objects, arrays and src-dest mappings into an object of tasks and targets.",
-  "version": "0.2.1",
+  "description": "Normalize any combination of src-dest mappings, files arrays, files objects and options into a consistent format.",
+  "version": "0.3.0",
   "homepage": "https://github.com/jonschlinkert/normalize-config",
   "author": {
     "name": "Jon Schlinkert",
@@ -20,6 +20,26 @@
       "url": "https://github.com/jonschlinkert/normalize-config/blob/master/LICENSE-MIT"
     }
   ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "dependencies": {
+    "globule": "^0.2.0",
+    "lodash": "^2.4.1",
+    "rte": "^0.1.4"
+  },
+  "devDependencies": {
+    "chai": "~1.9.1",
+    "fs-utils": "^0.4.3",
+    "mocha": "*",
+    "plasma": "^0.4.0",
+    "verb": "~0.2.6",
+    "verb-tag-jscomments": "^0.1.4"
+  },
   "keywords": [
     "config",
     "configuration",
@@ -35,22 +55,5 @@
     "src-dest",
     "target",
     "task"
-  ],
-  "main": "index.js",
-  "engines": {
-    "node": ">=0.8"
-  },
-  "scripts": {
-    "test": "mocha -R spec"
-  },
-  "dependencies": {
-    "globule": "~0.2.0",
-    "lodash": "~2.4.1"
-  },
-  "devDependencies": {
-    "verb": "~0.2.0",
-    "chai": "~1.9.1",
-    "fs-utils": "~0.4.0",
-    "js-beautify": "~1.4.2"
-  }
+  ]
 }
