@@ -9,7 +9,8 @@
           "expand": true
         },
         "src": [
-          "test/fixtures/a/*.js"
+          "test/fixtures/a/*.js",
+          "test/fixtures/c/*.js"
         ],
         "dest": "dist/"
       },
@@ -33,7 +34,8 @@
           "expand": true
         },
         "src": [
-          "test/fixtures/a/*.js"
+          "test/fixtures/a/*.js",
+          "test/fixtures/c/*.js"
         ],
         "dest": "dist/"
       }
@@ -48,7 +50,40 @@
           "expand": true
         },
         "src": [
-          "test/fixtures/a/*.js"
+          "test/fixtures/a/*.js",
+          "test/fixtures/c/*.js"
+        ],
+        "dest": "dist/"
+      }
+    },
+    {
+      "src": [
+        "test/fixtures/c/x.js"
+      ],
+      "dest": "dist/test/fixtures/c/x.js",
+      "orig": {
+        "options": {
+          "expand": true
+        },
+        "src": [
+          "test/fixtures/a/*.js",
+          "test/fixtures/c/*.js"
+        ],
+        "dest": "dist/"
+      }
+    },
+    {
+      "src": [
+        "test/fixtures/c/y.js"
+      ],
+      "dest": "dist/test/fixtures/c/y.js",
+      "orig": {
+        "options": {
+          "expand": true
+        },
+        "src": [
+          "test/fixtures/a/*.js",
+          "test/fixtures/c/*.js"
         ],
         "dest": "dist/"
       }

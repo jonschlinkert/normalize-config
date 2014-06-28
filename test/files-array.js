@@ -119,7 +119,7 @@ describe('when a files array is passed:', function () {
       var fixture = {
         options: {expand: false},
         files: [
-          {options: {expand: true}, src: ['test/fixtures/a/*.js'], dest: 'dist/'},
+          {options: {expand: true}, src: ['test/fixtures/a/*.js', 'test/fixtures/c/*.js'], dest: 'dist/'},
           {expand: true, src: ['test/fixtures/b/*.js'], dest: 'dist/'}
         ]
       };
