@@ -9,26 +9,12 @@
 
 var glob = require('globule');
 var Route = require('rte');
+var slashify = require('normalize-path');
 var _ = require('lodash');
 
 
 /**
- * ## slashify
- *
- * Normalize slashes on file paths.
- *
- * @param  {String} `filepath`
- * @return {String}
- * @api private
- */
-
-function slashify(filepath) {
-  return filepath.replace(/[\\\/]+/g, '/');
-}
-
-
-/**
- * ## siftKeys
+ * ## siftOptions
  *
  * Organize keys into `src`, `dest` and `options`.
  *
@@ -37,7 +23,7 @@ function slashify(filepath) {
  * @api private
  */
 
-function siftKeys(config) {
+function siftOptions(config) {
   var options = {};
   Object.keys(config).forEach(function(key) {
     if (key !== 'src' && key !== 'dest' && key !== 'options') {
@@ -189,7 +175,7 @@ normalize.multi = function(config, options) {
 
 normalize.filePair = function(config) {
   var files = [], options = {};
-  options = siftKeys(config);
+  options = siftOptions(config);
 
   var src = config.src || [];
   files.push({
