@@ -21,9 +21,9 @@ var tasks = {
       options: {hhh: 'iii'},
       pipeline: [],
       files: [
-        {src: 'fixtures/a/*.*', dest: '<%= config.base.dest %>/b', options: {}},
-        {src: 'fixtures/b/*.*', dest: '<%= config.base.dest %>/d'},
-        {src: 'fixtures/c/*.*', dest: '<%= config.base.dest %>/f', options: {}},
+        {src: 'fixtures/files/a/*.*', dest: '<%= config.base.dest %>/b', options: {}},
+        {src: 'fixtures/files/b/*.*', dest: '<%= config.base.dest %>/d'},
+        {src: 'fixtures/files/c/*.*', dest: '<%= config.base.dest %>/f', options: {}},
       ]
     }
   },
@@ -37,7 +37,7 @@ var tasks = {
     site: {
       options: {c: 'd'},
       pipeline: [],
-      src: 'fixtures/**/*.{js,txt}',
+      src: 'fixtures/files/**/*.{js,txt}',
       dest: 'abc/'
     },
     whatever: {
@@ -45,7 +45,7 @@ var tasks = {
       files: [
         {
           expand: true,
-          cwd: 'fixtures/',
+          cwd: 'fixtures/files/',
           src: ['**/*.js'],
           dest: 'build/',
           ext: '.min.js',
@@ -67,12 +67,12 @@ var tasks = {
     docs: {
       deps: [],
       run: function() {},
-      options: {h: 'i'},
+      options: {h: 'i', expand: true},
       pipeline: [],
       files: [
-        {src: 'a', dest: 'b', options: {}},
-        {src: 'c', dest: 'd'},
-        {src: 'e', dest: 'f', options: {}},
+        {src: 'fixtures/files/a/**/*.txt', dest: 'b'},
+        {src: 'fixtures/files/b/**/*.js', dest: 'd'},
+        {src: 'c/**/*.coffee', dest: 'f', cwd: 'fixtures/files'},
       ]
     }
   }
@@ -116,31 +116,30 @@ var tasks = {
 //     { expand: ':dest/:dirname/:name:ext', src: ['files/*.txt'], dest: 'site' },
 //   ]
 // });
+// console.log(res14.files)
 
 // var res15a = new Target({
 //   files: [
 //     { cwd: 'fixtures', expand: true, flatten: true, src: ['files/*.txt'], dest: 'abc' }
 //   ]
 // });
+// console.log(res15a)
 
 
-// console.log(res15a.files)
 
-// var target = new Target({
-//   cwd: 'foo',
-//   base: 'bar',
-//   pipeline: [],
-//   options: {a: 'b'},
-//   src: 'js/*.js',
-//   dest: 'dist/'
-// }, {options: {c: 'd', a: 'z'}});
+var target = new Target({
+  base: 'bar',
+  pipeline: [],
+  options: {a: 'b'},
+  expand: true,
+  src: 'fixtures/files/**/*.js',
+  dest: 'dist/'
+});
 
-// target.cwd = 'baz';
-// console.log(target.orig)
+console.log(target)
 
-var config = new Config(tasks);
-// var files = config.task('assemble.docs');
-
-console.log(config);
+// var config = new Config(tasks);
+// var docs = config.task('assemble.docs');
+// console.log(docs.files);
 
 // console.log(config.toArray('verb', 'docs'))
