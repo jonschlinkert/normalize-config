@@ -6,7 +6,7 @@
  */
 
 var util = require('util');
-var expect = require('chai').expect;
+var should = require('should');
 var normalize = require('..');
 
 var inspect = function(obj) {
@@ -20,7 +20,7 @@ describe('normalize():', function () {
       it('should return the options cloned in an `orig` object', function () {
         var actual = normalize({ process: true });
         var expected = {orig: {process: true }, files: []};
-        expect(actual).to.eql(expected);
+        actual.should.eql(expected);
       });
     });
   });
@@ -33,8 +33,8 @@ describe('normalize():', function () {
           dest: 'combined.md'
         });
 
-        expect(actual).to.have.deep.property('orig.dest', 'combined.md');
-        expect(actual).to.have.deep.property('orig.src', 'test/fixtures/a/*.md');
+        actual.should.have.deep.property('orig.dest', 'combined.md');
+        actual.should.have.deep.property('orig.src', 'test/fixtures/a/*.md');
         expect(actual.files[0]).to.have.deep.property('dest', 'combined.md');
         expect(actual.files[0].src).to.eql(['test/fixtures/a/a.md', 'test/fixtures/a/b.md']);
       });
@@ -56,7 +56,7 @@ describe('normalize():', function () {
           one: 'two',
           three: 'four',
         });
-        expect(actual).to.have.deep.property('orig.one', 'two');
+        actual.should.have.deep.property('orig.one', 'two');
         expect(actual.files).to.eql([]);
       });
     });
@@ -70,10 +70,10 @@ describe('normalize():', function () {
           dest: 'foo.md'
         });
 
-        expect(actual).to.have.deep.property('orig.dest', 'foo.md');
-        expect(actual).to.have.deep.property('orig.one', 'two');
-        expect(actual).to.have.deep.property('orig.three', 'four');
-        expect(actual).to.have.deep.property('orig.src', 'test/fixtures/a/*.md');
+        actual.should.have.deep.property('orig.dest', 'foo.md');
+        actual.should.have.deep.property('orig.one', 'two');
+        actual.should.have.deep.property('orig.three', 'four');
+        actual.should.have.deep.property('orig.src', 'test/fixtures/a/*.md');
         expect(actual.files[0]).to.have.deep.property('dest', 'foo.md');
         expect(actual.files[0].src).to.eql(['test/fixtures/a/a.md', 'test/fixtures/a/b.md']);
       });

@@ -1,9 +1,7 @@
 'use strict';
 
 var expand = require('expand');
-var extend = require('extend-shallow');
 var forOwn = require('for-own');
-var omit = require('object.omit');
 var set = require('set-value');
 var get = require('get-value');
 var Task = require('./lib/task');
