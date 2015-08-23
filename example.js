@@ -21,9 +21,9 @@ var tasks = {
       options: {hhh: 'iii'},
       pipeline: [],
       files: [
-        {src: 'a', dest: '<%= config.base.dest %>/b', options: {}},
-        {src: 'c', dest: '<%= config.base.dest %>/d'},
-        {src: 'e', dest: '<%= config.base.dest %>/f', options: {}},
+        {src: 'fixtures/a/*.*', dest: '<%= config.base.dest %>/b', options: {}},
+        {src: 'fixtures/b/*.*', dest: '<%= config.base.dest %>/d'},
+        {src: 'fixtures/c/*.*', dest: '<%= config.base.dest %>/f', options: {}},
       ]
     }
   },
@@ -37,19 +37,19 @@ var tasks = {
     site: {
       options: {c: 'd'},
       pipeline: [],
-      src: 'one/*.js',
-      dest: 'two/'
+      src: 'fixtures/**/*.{js,txt}',
+      dest: 'abc/'
     },
     whatever: {
       options: {foo: 'bar'},
       files: [
         {
-          expand: true,     // Enable dynamic expansion.
-          cwd: 'lib/',      // Src matches are relative to this path.
-          src: ['**/*.js'], // Actual pattern(s) to match.
-          dest: 'build/',   // Destination path prefix.
-          ext: '.min.js',   // Dest filepaths will have this extension.
-          extDot: 'first'   // Extensions in filenames begin after the first dot
+          expand: true,
+          cwd: 'fixtures/',
+          src: ['**/*.js'],
+          dest: 'build/',
+          ext: '.min.js',
+          extDot: 'first'
         }
       ]
     },
@@ -106,23 +106,26 @@ var tasks = {
 //   ]
 // });
 
-var res14 = new Target({
-  options: {
-    ext: '.md',
-    destBase: 'site',
-    cwd: 'fixtures',
-  },
-  files: [
-    { expand: ':dest/:dirname/:name:ext', src: ['files/*.txt'], dest: 'site' },
-  ]
-});
+// var res14 = new Target({
+//   options: {
+//     ext: '.md',
+//     destBase: 'site',
+//     cwd: 'fixtures',
+//   },
+//   files: [
+//     { expand: ':dest/:dirname/:name:ext', src: ['files/*.txt'], dest: 'site' },
+//   ]
+// });
 
-var res15 = new Target({
-  files: [
-    { cwd: 'fixtures', expand: true, flatten: true, src: ['files/*.txt'], dest: 'abc' }
-  ]
-});
-console.log(res15)
+// var res15a = new Target({
+//   files: [
+//     { cwd: 'fixtures', expand: true, flatten: true, src: ['files/*.txt'], dest: 'abc' }
+//   ]
+// });
+
+
+// console.log(res15a.files)
+
 // var target = new Target({
 //   cwd: 'foo',
 //   base: 'bar',
@@ -135,9 +138,9 @@ console.log(res15)
 // target.cwd = 'baz';
 // console.log(target.orig)
 
-// var config = new Config(tasks);
+var config = new Config(tasks);
 // var files = config.task('assemble.docs');
 
-// console.log(files);
+console.log(config);
 
 // console.log(config.toArray('verb', 'docs'))
