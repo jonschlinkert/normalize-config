@@ -17,16 +17,24 @@
     "test": "mocha"
   },
   "dependencies": {
+    "arr-diff": "^1.1.0",
+    "clone-deep": "^0.2.2",
     "defaults-deep": "^0.2.3",
     "define-property": "^0.1.3",
     "expand": "0.0.1",
     "extend-shallow": "^2.0.1",
     "for-own": "^0.1.3",
     "fs-utils": "^0.6.0",
+    "get-value": "^1.1.5",
+    "globby": "^2.1.0",
+    "has-value": "^0.2.0",
     "kind-of": "^2.0.1",
+    "mixin-deep": "^1.1.2",
     "object.omit": "^2.0.0",
     "object.pick": "^1.1.1",
-    "plasma": "^0.6.1"
+    "parse-filepath": "^0.6.3",
+    "plasma": "^0.6.1",
+    "set-value": "^0.2.0"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "^0.11.2",
