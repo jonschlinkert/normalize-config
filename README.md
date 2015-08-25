@@ -1,4 +1,11 @@
-# normalize-config [![NPM version](https://badge.fury.io/js/normalize-config.png)](http://badge.fury.io/js/normalize-config)
+
+# DEPRECATED
+
+**Please use [expand-config](https://jonschlinkert/expand-config) instead.**
+
+
+***
+
 
 > Normalize a declarative configuration with any combination of src-dest mappings, files arrays, files objects and options into a consistent format. Uses globule to expand glob patterns and rte for dynamically generating destination paths. Inspired by Grunt's `normalizeMultiTaskFiles` method.
 
