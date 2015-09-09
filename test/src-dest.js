@@ -8,7 +8,7 @@
 var util = require('util');
 var file = require('fs-utils');
 var helpers = require('./helpers/utils');
-var expect = require('chai').expect;
+var should = require('should');
 var normalize = require('..');
 
 var inspect = function(obj) {
@@ -28,7 +28,7 @@ describe('src-dest pairings:', function () {
       var fixture = {src:  'test/fixtures/*.js'};
       var actual = normalize(fixture);
       // writeExpected('src-only', actual, true);
-      expect(actual).to.eql(expected('src-only'));
+      actual.should.eql(expected('src-only'));
     });
   });
 
@@ -37,7 +37,7 @@ describe('src-dest pairings:', function () {
       var fixture = {dest:  'a/', route: ':dest/foo/bar'};
       var actual = normalize(fixture);
       // writeExpected('dest-only', actual, true);
-      expect(actual).to.eql(expected('dest-only'));
+      actual.should.eql(expected('dest-only'));
     });
   });
 
@@ -46,7 +46,7 @@ describe('src-dest pairings:', function () {
       var fixture = {src:  'test/fixtures/a/*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('src-and-dest', actual, true);
-      expect(actual).to.eql(expected('src-and-dest'));
+      actual.should.eql(expected('src-and-dest'));
     });
   });
 
@@ -55,7 +55,7 @@ describe('src-dest pairings:', function () {
       var fixture = {expand: true, src:  'test/fixtures/**/*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('src-dest-expand', actual, true);
-      expect(actual).to.eql(expected('src-dest-expand'));
+      actual.should.eql(expected('src-dest-expand'));
     });
   });
 
@@ -64,14 +64,14 @@ describe('src-dest pairings:', function () {
       var fixture = {options: {flatten: true}, src:  'test/fixtures/a/*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('src-dest-options1', actual, true);
-      expect(actual).to.eql(expected('src-dest-options1'));
+      actual.should.eql(expected('src-dest-options1'));
     });
 
     it('should normalize the options and extend the options to each src-dest pairing.', function () {
       var fixture = {options: { flatten: true }, src: ['test/fixtures/a/*.js'], dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('src-dest-options2', actual, true);
-      expect(actual).to.eql(expected('src-dest-options2'));
+      actual.should.eql(expected('src-dest-options2'));
     });
   });
 
@@ -80,14 +80,14 @@ describe('src-dest pairings:', function () {
       var fixture = {expand: true, src: ['test/fixtures/a/*.js', 'test/fixtures/b/*.js'], dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('src-dest-non-opts', actual, true);
-      expect(actual).to.eql(expected('src-dest-non-opts'));
+      actual.should.eql(expected('src-dest-non-opts'));
     });
 
     it('should normalize the non-src-dest properties to an options object, and try to use the options.', function () {
       var fixture = {expand: true, flatten: true, src: ['test/fixtures/a/*.js', 'test/fixtures/b/*.js'], dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('src-dest-non-opts-flat', actual, true);
-      expect(actual).to.eql(expected('src-dest-non-opts-flat'));
+      actual.should.eql(expected('src-dest-non-opts-flat'));
     });
   });
 });
@@ -99,7 +99,7 @@ describe('expand:', function () {
       var fixture = {options: {expand: true }, src: 'test/fixtures/*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('expand-true', actual, true);
-      expect(actual).to.eql(expected('expand-true'));
+      actual.should.eql(expected('expand-true'));
     });
   });
 
@@ -108,14 +108,14 @@ describe('expand:', function () {
       var fixture = {options: {expand: true, cwd: 'test/fixtures'}, src: '*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('expand-true-cwd', actual, true);
-      expect(actual).to.eql(expected('expand-true-cwd'));
+      actual.should.eql(expected('expand-true-cwd'));
     });
 
     it('should normalize the options and extend the options onto each src-dest pairing.', function () {
       var fixture = {options: {expand: true, flatten: true, cwd: 'test/fixtures'}, src: '*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('expand-true-cwd-flatten', actual, true);
-      expect(actual).to.eql(expected('expand-true-cwd-flatten'));
+      actual.should.eql(expected('expand-true-cwd-flatten'));
     });
   });
 
@@ -124,7 +124,7 @@ describe('expand:', function () {
       var fixture = {options: {expand: true, flatten: true}, src: 'test/fixtures/*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('expand-true-flatten', actual, true);
-      expect(actual).to.eql(expected('expand-true-flatten'));
+      actual.should.eql(expected('expand-true-flatten'));
     });
   });
 
@@ -133,7 +133,7 @@ describe('expand:', function () {
       var fixture = {options: {cwd: 'test/fixtures'}, src: '*.js', dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('cwd', actual, true);
-      expect(actual).to.eql(expected('cwd'));
+      actual.should.eql(expected('cwd'));
     });
   });
 
@@ -142,7 +142,7 @@ describe('expand:', function () {
       var fixture = {options: {flatten: true}, src: ['test/fixtures/*.js'], dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('flatten', actual, true);
-      expect(actual).to.eql(expected('flatten'));
+      actual.should.eql(expected('flatten'));
     });
   });
 
@@ -151,7 +151,7 @@ describe('expand:', function () {
       var fixture = {src: ['test/fixtures/*.js'], dest: 'dist/'};
       var actual = normalize(fixture);
       // writeExpected('basic', actual, true);
-      expect(actual).to.eql(expected('basic'));
+      actual.should.eql(expected('basic'));
     });
   });
 });

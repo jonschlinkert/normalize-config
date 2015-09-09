@@ -8,23 +8,21 @@
 var util = require('util');
 var file = require('fs-utils');
 var helpers = require('./helpers/utils');
-var expect = require('chai').expect;
+var should = require('should');
 var normalize = require('..');
 
-var inspect = function(obj) {
+var inspect = function (obj) {
   return util.inspect(obj, null, 10);
 };
 
-var expected = function(name) {
+var expected = function (name) {
   return require('./expected/route/' + name + '.json');
 };
 
 var writeExpected = helpers.expected('route');
 
-
-
 describe('routes:', function () {
-  it('should use the route to re-write the destination path.', function () {
+  it.only('should use the route to re-write the destination path.', function () {
     var fixture = {
       options: {
         expand: true,
@@ -39,7 +37,7 @@ describe('routes:', function () {
     };
     var actual = normalize(fixture);
     // writeExpected('dest', actual, true);
-    expect(actual).to.eql(expected('dest'));
+    actual.should.eql(expected('dest'));
     expect(actual.files[0].dest).to.eql('dist/foo/bar/blah/one.html');
   });
 
@@ -58,7 +56,7 @@ describe('routes:', function () {
     };
     var actual = normalize(fixture);
     // writeExpected('route', actual, true);
-    expect(actual).to.eql(expected('route'));
+    actual.should.eql(expected('route'));
     expect(actual.files[0].dest).to.eql('dist/foo/bar/blah/one.html');
   });
 });
