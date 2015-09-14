@@ -1,12 +1,17 @@
 'use strict';
 
 var typeOf = require('kind-of');
+var defaults = require('defaults-deep');
 var utils = require('./lib/utils');
-var optsKeys = utils.optsKeys;
 
 function normalize(config, dest, opts) {
   if (arguments.length > 1) {
     config = toObject(config, dest, opts);
+  }
+
+  var context = {};
+  if (utils.isObject(this) && this.options) {
+    context = this.options;
   }
 
   var res = null;
@@ -25,15 +30,23 @@ function normalize(config, dest, opts) {
       break;
     }
   }
-  return sortObjects(res);
+
+  // copy `context` options onto config root
+  res = copyOptions(res, context);
+  return formatObject(res);
 }
+
+/**
+ * Convert args list to a config object.
+ */
 
 function toObject(src, dest, options) {
   var config = {};
   if (utils.isObject(src)) {
     config = src;
+  }
 
-  } else if (isValidSrc(src)) {
+  if (isValidSrc(src)) {
     config.src = src;
   }
 
@@ -49,6 +62,10 @@ function toObject(src, dest, options) {
   }
   return config;
 }
+
+/**
+ * Object
+ */
 
 function normalizeObject(val) {
   val = normalizeOptions(val);
@@ -68,16 +85,26 @@ function normalizeObject(val) {
 
   if (Array.isArray(val.files)) {
     val.files = reduceFiles(val.files);
+    return val;
+  }
 
-  } else if (utils.isObject(val.files)) {
+  if (utils.isObject(val.files)) {
     val.files = normalizeFiles(val);
   }
   return val;
 }
 
+/**
+ * String
+ */
+
 function normalizeString(val) {
   return toFiles({src: [val]});
 }
+
+/**
+ * Array
+ */
 
 function normalizeArray(arr) {
   if (isValidSrc(arr[0])) {
@@ -86,11 +113,39 @@ function normalizeArray(arr) {
   return {files: reduceFiles(arr)};
 }
 
+/**
+ * Files property
+ */
+
+function normalizeFiles(val) {
+  var res = normalize(val.files || val);
+  return res.files;
+}
+
+/**
+ * Normalize all of the objects in a `files` array.
+ *
+ * @param {Array} `files`
+ * @return {Array}
+ */
+
+function reduceFiles(files) {
+  return files.reduce(function (acc, ele) {
+    var res = normalize(ele);
+    acc.push.apply(acc, res.files);
+    return acc;
+  }, []);
+}
+
+/**
+ * Options
+ */
+
 function normalizeOptions(obj) {
-  obj.options = obj.options || {};
   for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
-      if (optsKeys.indexOf(key) > -1) {
+      if (utils.optsKeys.indexOf(key) > -1) {
+        obj.options = obj.options || {};
         obj.options[key] = obj[key];
         delete obj[key];
       }
@@ -99,21 +154,26 @@ function normalizeOptions(obj) {
   return obj;
 }
 
-function normalizeFiles(val) {
-  var res = normalize(val.files || val);
-  return res.files;
+/**
+ * Copy options
+ */
+
+function copyOptions(config, context) {
+  var ctx = context.options || context;
+  if (utils.isObject(ctx) && ctx) {
+    config.options = defaults(config.options, ctx);
+  }
+  return config;
 }
 
-
 /**
- * Convert from:
+ * Create a `files` array from a src-dest object.
  *
  * ```js
+ * // converts from:
  * { src: '*.js', dest: 'foo/' }
- * ```
- * to:
  *
- * ```js
+ * // to:
  * { files: [{ src: ['*.js'], dest: 'foo/' }] }
  * ```
  */
@@ -128,51 +188,72 @@ function toFiles(val) {
   return config;
 }
 
-function toSrcDest(val) {
-  var files = [];
+/**
+ * When `src`, `dest` and `files` are absent from the
+ * object, we check to see if file objects were defined.
+ *
+ * ```js
+ * // converts from:
+ * { 'foo/': '*.js' }
+ *
+ * // to
+ * { files: [{ src: ['*.js'], dest: 'foo/' }] }
+ * ```
+ */
+
+function filesObjects(val) {
+  var res = {};
+  if (val.options) res.options = val.options;
+  res.files = [];
+
   for (var key in val) {
     if (key !== 'options') {
       var file = {};
+      if (val.options) file.options = val.options;
       file.src = utils.arrayify(val[key]);
       file.dest = key;
-      files.push(file);
+      res.files.push(file);
     }
   }
-  return files;
-}
-
-// this means that src, dest and files are absent,
-// so this might be file objects, like:
-//=> {'foo/': '*.js'}
-function filesObjects(val) {
-  var res = {options: val.options || {}};
-  res.files = toSrcDest(val);
   return res;
 }
 
+/**
+ * Ensure that `src` on the given val is an array
+ *
+ * @param {Object} `val` Object with a `src` property
+ * @return {Object}
+ */
+
 function normalizeSrc(val) {
-  if (val.src) {
-    val.src = utils.arrayify(val.src);
-  }
+  if (!val.src) return val;
+  val.src = utils.arrayify(val.src);
   return val;
 }
 
-function reduceFiles(files) {
-  return files.reduce(function (acc, ele) {
-    var res = normalize(ele);
-    acc.push.apply(acc, res.files);
-    return acc;
-  }, []);
-}
+/**
+ * Optionally sort the keys in all of the files objects.
+ * Helps with debugging.
+ *
+ * @param {Object} `val` Pass `{sort: true}` on `val.options` to enable sorting.
+ * @return {Object}
+ */
 
+function formatObject(val) {
+  if (val.options && val.options.format === false) {
+    return val;
+  }
 
-function sortObjects(val) {
   val.files = val.files.map(function (ele) {
     var keys = Object.keys(ele);
     var obj = {};
-    obj.options = ele.options || {};
-    if (ele.src) obj.src = ele.src;
-    if (ele.dest) obj.dest = ele.dest;
+    if (ele.options) obj.options = ele.options;
+    if ('src' in ele) obj.src = ele.src;
+    if ('dest' in ele) {
+      obj.dest = ele.dest;
+    } else {
+      obj.dest = '';
+    }
     keys.forEach(function (key) {
       if (key !== 'options' && !isFilesKey(key)) {
         obj[key] = ele[key];
