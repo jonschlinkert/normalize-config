@@ -5,13 +5,13 @@ var util = require('util');
 var assert = require('assert');
 var should = require('should');
 
-// wrap `toMapping` to log out results
-function inspect(options) {
-  options = options || {};
-  return function () {
-    var files = require('./');
-    var config = files.apply(files, arguments);
-    if (options.debug === true) {
+// wrap `normalize` to log out results
+function inspect(config) {
+  var fn = require('./');
+  config = config || {};
+  return function (val) {
+    var config = fn.apply(fn, arguments);
+    if (config.debug === true) {
       console.log(util.inspect(config, null, 10));
     }
     return config;
@@ -19,17 +19,16 @@ function inspect(options) {
 }
 
 // change to `true` to log out results
-var toMapping = inspect({debug: false});
+var normalize = inspect({debug: false});
 
-describe('toMapping', function () {
+describe('normalize', function () {
   it('should convert an object of src-dest mappings to a file array:', function () {
-    var config = toMapping({
+    var config = normalize({
       'foo/': 'lib/*.js',
       'bar/': '*.md'
     });
 
     assert(Array.isArray(config.files));
-    assert(Array.isArray(config.files[0].src));
     assert(config.files[0].src[0] === 'lib/*.js');
     assert(config.files[0].dest === 'foo/');
 
@@ -38,7 +37,7 @@ describe('toMapping', function () {
   });
 
   it('should convert arguments to a files array:', function () {
-    var config = toMapping('lib/*.js', 'foo/');
+    var config = normalize('lib/*.js', 'foo/');
 
     assert(Array.isArray(config.files));
     assert(Array.isArray(config.files[0].src));
@@ -47,7 +46,7 @@ describe('toMapping', function () {
   });
 
   it('should arrayify src when args are converted:', function () {
-    var config = toMapping('lib/*.js', 'foo/');
+    var config = normalize('lib/*.js', 'foo/');
 
     assert(Array.isArray(config.files[0].src));
     assert(config.files[0].src[0] === 'lib/*.js');
@@ -56,13 +55,13 @@ describe('toMapping', function () {
   it('should support src and dest being passed on options:', function () {
     // this allows a default src/dest to be passed from main options
     // of consuming libraries
-    var config = toMapping({options: {src: 'lib/*.js', dest: 'foo/'}});
+    var config = normalize({options: {src: 'lib/*.js', dest: 'foo/'}});
     assert(Array.isArray(config.files[0].src));
     assert(config.files[0].src[0] === 'lib/*.js');
   });
 
   it('should convert an object with src-dest to a files array:', function () {
-    var config = toMapping({dest: 'foo/', src: 'lib/*.js'});
+    var config = normalize({dest: 'foo/', src: 'lib/*.js'});
 
     assert(Array.isArray(config.files));
     assert(Array.isArray(config.files[0].src));
@@ -71,17 +70,17 @@ describe('toMapping', function () {
   });
 
   it('should support passing a files array:', function () {
-    var config = toMapping({files: ['*.js']});
+    var config = normalize({files: ['*.js']});
     assert(config.files[0].src[0] === '*.js');
   });
 
   it('should extend "target" options onto objects:', function () {
-    var config = toMapping({dest: 'foo/', src: 'lib/*.js'}, {process: true});
+    var config = normalize({dest: 'foo/', src: 'lib/*.js'}, {process: true});
 
     assert(Array.isArray(config.files));
     assert(Array.isArray(config.files[0].src));
     assert(config.files[0].src[0] === 'lib/*.js');
     assert(config.files[0].dest === 'foo/');
-    assert(config.process === true);
+    assert(config.options.process === true);
   });
 });

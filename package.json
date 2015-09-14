@@ -11,7 +11,7 @@
   "license": "MIT",
   "files": [
     "index.js",
-    "reserved.js"
+    "lib/"
   ],
   "main": "index.js",
   "engines": {
@@ -21,10 +21,14 @@
     "test": "mocha"
   },
   "dependencies": {
-    "extend-shallow": "^2.0.1",
-    "object.omit": "^2.0.0"
+    "kind-of": "^2.0.1"
   },
   "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-istanbul": "^0.10.0",
+    "gulp-jshint": "^1.11.2",
+    "gulp-mocha": "^2.1.3",
+    "jshint-stylish": "^2.0.1",
     "mocha": "*",
     "should": "*"
   },
