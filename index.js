@@ -1,217 +1,101 @@
 /*!
- * normalize-config <https://github.com/jonschlinkert/normalize-config>
+ * files-objects <https://github.com/jonschlinkert/files-objects>
  *
- * Copyright (c) 2014 Jon Schlinkert, contributors.
- * Licensed under the MIT license.
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
  */
 
 'use strict';
 
-var glob = require('globule');
-var Route = require('rte');
-var slashify = require('normalize-path');
-var _ = require('lodash');
-
+var extend = require('extend-shallow');
+var omit = require('object.omit');
+var reserved = require('./reserved');
 
 /**
- * ## siftOptions
- *
- * Organize keys into `src`, `dest` and `options`.
- *
- * @param  {Object} `config`
- * @return {Object}
- * @api private
- */
-
-function siftOptions(config) {
-  var options = {};
-  Object.keys(config).forEach(function(key) {
-    if (key !== 'src' && key !== 'dest' && key !== 'options') {
-      options[key] = config[key];
-    }
-    if (key === 'options') {
-      _.extend(options, config[key]);
-    }
-  });
-  return options;
-}
-
-
-/**
- * ## normalize
- *
- * Normalize any combination of files arrays, files objects,
- * src-dest pairings and options.
- *
- * **Example:**
+ * Expand files-objects into an array of `src-dest` mappings.
  *
  * ```js
- * normalize({src: '*.js', dest: 'dist/'});
+ * var files = toMapping({
+ *   'foo/': ['bar/*.js']
+ * });
+ * //=> {files: [{src: ['bar/*.js'], dest: 'foo/'}]}
  * ```
- *
- * **Params:**
- *
- * @param  {Object} `config` The config object to be normalized.
- * @return {Object}
  */
 
-var normalize = module.exports = function(config) {
-  config = _.cloneDeep(config);
-  var orig = _.cloneDeep(config);
-
-  var files = [];
-  if (config.hasOwnProperty('src') || config.hasOwnProperty('dest')) {
-    files = normalize.filePair(config);
+module.exports = function filesObjects(config, target) {
+  if (typeof config === 'string' || Array.isArray(config)) {
+    config = toObject.apply(null, arguments);
   }
 
-  if (config.hasOwnProperty('files')) {
-    if (Array.isArray(config.files)) {
-      files = config.files.map(function(fp) {
-        if (typeof fp === 'string') {
-          fp = {src: fp};
-        }
-        var options = {};
-        Object.keys(fp).forEach(function(key) {
-          var value = fp[key];
-          if (key !== 'src' && key !== 'dest' && key !== 'options') {
-            options[key] = value;
-            delete fp[key];
-          }
-          if (key === 'options') {
-            options = _.extend({}, config.options, options, value);
-          }
-        });
-        options = _.extend({}, config.options, fp.options, options);
-        delete fp.options;
-        fp = _.extend({}, {options: options}, fp);
-        return fp;
-      });
-    } else if (!Array.isArray(config.files) && _.isObject(config.files)) {
-      files = normalize.normalizeObj(config);
+  config = fromOptions(config);
+
+  // allow `src` to be a setter
+  if ('src' in config || config.hasOwnProperty('dest')) {
+    var files = {};
+    files.src = arrayify(config.src);
+    files.dest = config.dest || '';
+    var res = {files: [files]};
+    if (target) res = extend({}, target, res);
+    return res;
+  }
+
+  target = target || {};
+  config.files = arrayify(config.files || []);
+
+  for (var i = 0; i < config.files.length; i++) {
+    var ele = config.files[i];
+    if (typeof ele === 'string') {
+      config.files[i] = {src: [ele]};
     }
   }
 
-  var result = [];
-  files = files.map(function(fp) {
-    var opts = _.extend({}, config.options, {
-      src: fp.src,
-      dest: fp.dest
-    }, fp.options);
-
-    opts.destBase = opts.destBase || opts.dest;
-    var ctx = _.cloneDeep(opts);
-    var expanded = {};
-
-    if (opts.expand) {
-      expanded = glob.findMapping(opts);
-    } else {
-      expanded = [{src: glob.find(opts).map(slashify), dest: fp.dest}];
+  var opts = config.options;
+  for (var key in config) {
+    if (reserved.indexOf(key) > -1) {
+      continue;
     }
 
-    expanded = expanded.map(function(filePair) {
-      ctx.src = filePair.src;
+    var obj = {};
+    obj.src = arrayify(config[key]);
+    obj.dest = key;
+    if (opts) obj.options = opts;
 
-      if (ctx.hasOwnProperty('route')) {
-        var route = new Route(ctx);
-        route.set('dest', ctx.route);
-
-        if (filePair.src.length) {
-          filePair.dest = filePair.src.map(function(filepath) {
-            var dest = route.parse(filepath, 'dest').dest;
-            return slashify(dest);
-          })[0];
-        } else {
-          var dest = route.parse(filePair.dest, 'dest').dest;
-          filePair.dest = slashify(dest);
-        }
-      }
-      result.push(_.extend(filePair, {orig: fp}));
-    });
-  });
-
-  return {
-    orig: orig,
-    files: result
-  };
+    config.files.push(obj);
+    delete config[key];
+  }
+  // extend non-files target properties onto the config
+  var nonfiles = omit(target, ['files']);
+  return extend({}, nonfiles, config);
 };
 
+function arrayify(val) {
+  return Array.isArray(val) ? val : [val];
+}
 
-/**
- * ## .multi
- *
- * Normlize a config object with multiple files definitions.
- *
- * **Params:**
- *
- * @param  {Object} `config`
- * @param  {Object} `options`
- * @return {Object}
- */
+function fromOptions(config) {
+  if (!config.options) return config;
+  var opts = config.options;
+  if (!('src' in config) && opts.src) {
+    config.src = opts.src;
+    delete config.options.src;
+  }
+  if (!('dest' in config) && opts.dest) {
+    config.dest = opts.dest;
+    delete config.options.dest;
+  }
+  return config;
+}
 
-normalize.multi = function(config, options) {
+function toObject(src, dest, options) {
   var obj = {};
-
-  Object.keys(config).forEach(function(key) {
-    var value = config[key];
-    _.extend(value, {options: options});
-    obj[key] = normalize(value);
-  });
-
+  obj.src = src ? arrayify(src) : [];
+  if (typeof dest !== 'string') {
+    options = dest;
+    dest = '';
+  }
+  obj.dest = dest;
+  if (options) {
+    obj.options = options;
+  }
   return obj;
-};
-
-
-/**
- * ## .filePair
- *
- * Normalize `src`, `dest` and options definitions to an array of files objects.
- *
- * **Params:**
- *
- * @param  {Object} `config`
- * @return {Object}
- * @api public
- */
-
-normalize.filePair = function(config) {
-  var files = [], options = {};
-  options = siftOptions(config);
-
-  var src = config.src || [];
-  files.push({
-    options: options,
-    src: !Array.isArray(src) ? [src] : src,
-    dest: config.dest || ''
-  });
-
-  return files;
-};
-
-
-/**
- * ## .normalizeObj
- *
- * Normalize files objects with varied formats to an array of files objects.
- *
- * **Params:**
- *
- * @param  {Object} `config`
- * @return {Object}
- * @api public
- */
-
-normalize.normalizeObj = function(config) {
-  var files = [];
-
-  Object.keys(config.files).forEach(function(key) {
-    var value = config.files[key];
-    value = !Array.isArray(value) ? [value] : value;
-    files.push({
-      options: config.options || {},
-      src: value,
-      dest: key
-    });
-  });
-
-  return files;
-};
+}

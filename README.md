@@ -1,230 +1,96 @@
+# files-objects [![NPM version](https://badge.fury.io/js/files-objects.svg)](http://badge.fury.io/js/files-objects)
 
-# DEPRECATED
-
-**Please use [expand-config](https://jonschlinkert/expand-config) instead.**
-
-
-***
-
-
-> Normalize a declarative configuration with any combination of src-dest mappings, files arrays, files objects and options into a consistent format. Uses globule to expand glob patterns and rte for dynamically generating destination paths. Inspired by Grunt's `normalizeMultiTaskFiles` method.
-
-## TOC
-
-<!-- toc -->
-* [Install](#install)
-* [Usage](#usage)
-  * [Destination paths](#destination-paths)
-  * [Config examples](#config-examples)
-* [API](#api)
-  * [normalize](#normalize)
-  * [.multi](#multi)
-  * [.filePair](#filepair)
-  * [.normalizeObj](#normalizeobj)
-* [Author](#author)
-* [License](#license)
-
-<!-- toc stop -->
+> Expand files objects into src-dest mappings.
 
 ## Install
-Install with [npm](npmjs.org):
 
-```bash
-npm i normalize-config --save-dev
+Install with [npm](https://www.npmjs.com/)
+
+```sh
+$ npm i files-objects --save
 ```
 
 ## Usage
 
 ```js
-var normalize = require('normalize-config');
-console.log(normalize({files: {'dist/': '*.js'}}));
+var toMapping = require('files-objects');
+toMapping(src, dest, options);
+// or
+toMapping({src: src, dest: dest});
 ```
 
-### Destination paths
+## Examples
 
-Dynamically generate destination paths by defining a `route` property with the structure you want to use for the destination path(s).
-
-**Example:**
+All of the following result in the same object:
 
 ```js
-var result = normalize({
-  options: {
-    route: 'foo/:dest/:basename.min.js'
-  },
-  src: ['*.js'],
-  dest: 'scripts/'
-});
-
-//=> { files: [ { src: [ 'index.js' ], dest: 'foo/scripts/index.min.js' } ] }
+toMapping('lib/*.js', 'foo/');
+toMapping({'foo/': 'lib/*.js'});
+toMapping({dest: 'foo/', src: 'lib/*.js'});
+//=> { files: [{ src: [ 'lib/*.js' ], dest: 'foo/' }]}
 ```
 
-See [rte](https://github.com/jonschlinkert/rte) for all related options.
+**no `dest`**
 
-### Config examples
-
-All of these:
+All of the following result in the same object:
 
 ```js
-{files: {'dist/': '*.js'}}
-{files: [{src: '*.js', dest: 'dist/'}]}
-{src: '*.js', dest: 'dist/'}
-{src: ['*.js'], dest: 'dist/'}
+toMapping('lib/*.js');
+toMapping(['lib/*.js']);
+toMapping({'': 'lib/*.js'});
+toMapping({'': ['lib/*.js']});
+toMapping({src: 'lib/*.js'});
+toMapping({src: ['lib/*.js']});
+toMapping({src: 'lib/*.js', dest: ''});
+toMapping({src: ['lib/*.js'], dest: ''});
+//=> {files: [{ src: ['lib/*.js'], dest: ''}]}
 ```
 
-Would normalize to:
+**with `dest`**
+
+All of the following result in the same object:
 
 ```js
-{files: [{src: ['index.js'], dest: 'dist/'}]}
+toMapping('lib/*.js', 'foo/');
+toMapping(['lib/*.js'], 'foo/');
+toMapping({'foo/': 'lib/*.js'});
+toMapping({'foo/': ['lib/*.js']});
+toMapping({src: ['lib/*.js'], dest: 'foo/'});
+toMapping({src: 'lib/*.js', dest: 'foo/'});
+//=> {files: [{ src: ['lib/*.js'], dest: 'foo/'}]}
 ```
 
-All of the following:
+## Related projects
 
-```js
-var normalize = require('normalize-config');
+* [expand-config](https://www.npmjs.com/package/expand-config): Expand tasks, targets and files in a declarative configuration. | [homepage](https://github.com/jonschlinkert/expand-config)
+* [expand-files](https://www.npmjs.com/package/expand-files): Expand glob patterns in a declarative configuration into src-dest mappings. | [homepage](https://github.com/jonschlinkert/expand-files)
+* [expand-target](https://www.npmjs.com/package/expand-target): Expand target definitions in a declarative configuration. | [homepage](https://github.com/jonschlinkert/expand-target)
+* [expand-task](https://www.npmjs.com/package/expand-task): Expand and normalize task definitions in a declarative configuration. | [homepage](https://github.com/jonschlinkert/expand-task)
 
-var config = normalize({
-  options: {
-    expand: true,
-    cwd: 'test/fixtures'
-  },
-  files: {
-    'dist/a/': ['a/*.js'],
-    'dist/b/': ['b/*.js']
-  }
-});
+## Running tests
 
-var result = normalize({
-  options: {
-    expand: true,
-    cwd: 'test/fixtures'
-  },
-  files: [
-    {dest: 'dist/a/', src: ['a/*.js']},
-    {dest: 'dist/b/', src: ['b/*.js']}
-  ]
-});
+Install dev dependencies:
 
-var result = normalize({
-  options: {
-    cwd: 'test/fixtures'
-  },
-  files: [
-    {expand: true, dest: 'dist/a/', src: ['a/*.js']},
-    {expand: true, dest: 'dist/b/', src: ['b/*.js']}
-  ]
-});
-
-var result = normalize({
-  options: {
-    cwd: 'test/fixtures'
-  },
-  files: [
-    {options: {expand: true}, dest: 'dist/a/', src: ['a/*.js']},
-    {options: {expand: true}, dest: 'dist/b/', src: ['b/*.js']}
-  ]
-});
-
-console.log(config);
+```sh
+$ npm i -d && npm test
 ```
 
-Would normalize to the following (see the [test fixtures](./test/fixtures)):
+## Contributing
 
-```js
-{ files:
-   [ { src: [ 'a/x.js' ],
-       dest: 'dist/a/a/x.js',
-       orig:
-        { options: { expand: true, cwd: 'test/fixtures' },
-          src: [ 'a/*.js' ],
-          dest: 'dist/a/' } },
-     { src: [ 'a/y.js' ],
-       dest: 'dist/a/a/y.js',
-       orig:
-        { options: { expand: true, cwd: 'test/fixtures' },
-          src: [ 'a/*.js' ],
-          dest: 'dist/a/' } },
-     { src: [ 'b/x.js' ],
-       dest: 'dist/b/b/x.js',
-       orig:
-        { options: { expand: true, cwd: 'test/fixtures' },
-          src: [ 'b/*.js' ],
-          dest: 'dist/b/' } },
-     { src: [ 'b/y.js' ],
-       dest: 'dist/b/b/y.js',
-       orig:
-        { options: { expand: true, cwd: 'test/fixtures' },
-          src: [ 'b/*.js' ],
-          dest: 'dist/b/' } },
-     { src: [ 'b/z.js' ],
-       dest: 'dist/b/b/z.js',
-       orig:
-        { options: { expand: true, cwd: 'test/fixtures' },
-          src: [ 'b/*.js' ],
-          dest: 'dist/b/' } } ] }
-```
-
-## API
-### normalize
-
-Normalize any combination of files arrays, files objects,
-src-dest pairings and options.
-
-**Example:**
-
-```js
-normalize({src: '*.js', dest: 'dist/'});
-```
-
-**Params:**
-
-* `config` {Object}: The config object to be normalized.  
-* `return`{Object} 
-
-
-### .multi
-
-Normlize a config object with multiple files definitions.
-
-**Params:**
-
-* `config` {Object} 
-* `options` {Object}  
-* `return`{Object} 
-
-
-### .filePair
-
-Normalize `src`, `dest` and options definitions to an array of files objects.
-
-**Params:**
-
-* `config` {Object}  
-* `return`{Object} 
-
-
-### .normalizeObj
-
-Normalize files objects with varied formats to an array of files objects.
-
-**Params:**
-
-* `config` {Object}  
-* `return`{Object}
-
-Options are passed to [globule](https://github.com/cowboy/node-globule). Visit [globule](https://github.com/cowboy/node-globule) to see all supported options.
-
+Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/files-objects/issues/new).
 
 ## Author
 
 **Jon Schlinkert**
- 
+
 + [github/jonschlinkert](https://github.com/jonschlinkert)
-+ [twitter/jonschlinkert](http://twitter.com/jonschlinkert) 
++ [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
 
 ## License
-Copyright (c) 2014 Jon Schlinkert, contributors.  
-Released under the MIT license
+
+Copyright © 2015 Jon Schlinkert
+Released under the MIT license.
 
 ***
 
-_This file was generated by [verb-cli](https://github.com/assemble/verb-cli) on June 22, 2014._
+_This file was generated by [verb-cli](https://github.com/assemble/verb-cli) on September 02, 2015._
