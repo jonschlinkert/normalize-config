@@ -1,101 +1,206 @@
-/*!
- * files-objects <https://github.com/jonschlinkert/files-objects>
- *
- * Copyright (c) 2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
 'use strict';
 
-var extend = require('extend-shallow');
-var omit = require('object.omit');
-var reserved = require('./reserved');
+var typeOf = require('kind-of');
+var utils = require('./lib/utils');
+var optsKeys = utils.optsKeys;
 
-/**
- * Expand files-objects into an array of `src-dest` mappings.
- *
- * ```js
- * var files = toMapping({
- *   'foo/': ['bar/*.js']
- * });
- * //=> {files: [{src: ['bar/*.js'], dest: 'foo/'}]}
- * ```
- */
-
-module.exports = function filesObjects(config, target) {
-  if (typeof config === 'string' || Array.isArray(config)) {
-    config = toObject.apply(null, arguments);
+function normalize(config, dest, opts) {
+  if (arguments.length > 1) {
+    config = toObject(config, dest, opts);
   }
 
-  config = fromOptions(config);
-
-  // allow `src` to be a setter
-  if ('src' in config || config.hasOwnProperty('dest')) {
-    var files = {};
-    files.src = arrayify(config.src);
-    files.dest = config.dest || '';
-    var res = {files: [files]};
-    if (target) res = extend({}, target, res);
-    return res;
-  }
-
-  target = target || {};
-  config.files = arrayify(config.files || []);
-
-  for (var i = 0; i < config.files.length; i++) {
-    var ele = config.files[i];
-    if (typeof ele === 'string') {
-      config.files[i] = {src: [ele]};
+  var res = null;
+  switch(typeOf(config)) {
+    case 'string':
+      res = normalizeString(config);
+      break;
+    case 'object':
+      res = normalizeObject(config);
+      break;
+    case 'array':
+      res = normalizeArray(config);
+      break;
+    default: {
+      res = config;
+      break;
     }
   }
-
-  var opts = config.options;
-  for (var key in config) {
-    if (reserved.indexOf(key) > -1) {
-      continue;
-    }
-
-    var obj = {};
-    obj.src = arrayify(config[key]);
-    obj.dest = key;
-    if (opts) obj.options = opts;
-
-    config.files.push(obj);
-    delete config[key];
-  }
-  // extend non-files target properties onto the config
-  var nonfiles = omit(target, ['files']);
-  return extend({}, nonfiles, config);
-};
-
-function arrayify(val) {
-  return Array.isArray(val) ? val : [val];
+  return sortObjects(res);
 }
 
-function fromOptions(config) {
-  if (!config.options) return config;
-  var opts = config.options;
-  if (!('src' in config) && opts.src) {
-    config.src = opts.src;
-    delete config.options.src;
+function toObject(src, dest, options) {
+  var config = {};
+  if (utils.isObject(src)) {
+    config = src;
+
+  } else if (isValidSrc(src)) {
+    config.src = src;
   }
-  if (!('dest' in config) && opts.dest) {
-    config.dest = opts.dest;
-    delete config.options.dest;
+
+  if (utils.isObject(dest)) {
+    config.options = dest;
+    dest = '';
+  } else if (utils.isObject(options)) {
+    config.options = options;
+  }
+
+  if (isValidDest(dest)) {
+    config.dest = dest;
   }
   return config;
 }
 
-function toObject(src, dest, options) {
-  var obj = {};
-  obj.src = src ? arrayify(src) : [];
-  if (typeof dest !== 'string') {
-    options = dest;
-    dest = '';
+function normalizeObject(val) {
+  val = normalizeOptions(val);
+
+  // if src/dest are on options, move them to root
+  val = utils.move(val, 'src');
+  val = utils.move(val, 'dest');
+
+  // allow src to be a getter
+  if ('src' in val || val.hasOwnProperty('dest')) {
+    return toFiles(val);
   }
-  obj.dest = dest;
-  if (options) {
-    obj.options = options;
+
+  if (!('files' in val)) {
+    return filesObjects(val);
+  }
+
+  if (Array.isArray(val.files)) {
+    val.files = reduceFiles(val.files);
+
+  } else if (utils.isObject(val.files)) {
+    val.files = normalizeFiles(val);
+  }
+  return val;
+}
+
+function normalizeString(val) {
+  return toFiles({src: [val]});
+}
+
+function normalizeArray(arr) {
+  if (isValidSrc(arr[0])) {
+    return toFiles({src: arr});
+  }
+  return {files: reduceFiles(arr)};
+}
+
+function normalizeOptions(obj) {
+  obj.options = obj.options || {};
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (optsKeys.indexOf(key) > -1) {
+        obj.options[key] = obj[key];
+        delete obj[key];
+      }
+    }
   }
   return obj;
 }
+
+function normalizeFiles(val) {
+  var res = normalize(val.files || val);
+  return res.files;
+}
+
+
+/**
+ * Convert from:
+ *
+ * ```js
+ * { src: '*.js', dest: 'foo/' }
+ * ```
+ * to:
+ *
+ * ```js
+ * { files: [{ src: ['*.js'], dest: 'foo/' }] }
+ * ```
+ */
+
+function toFiles(val) {
+  var config = {files: [normalizeSrc(val)]};
+  for (var key in val) {
+    if (val.hasOwnProperty(key) && !isFilesKey(key)) {
+      config[key] = val[key];
+    }
+  }
+  return config;
+}
+
+function toSrcDest(val) {
+  var files = [];
+  for (var key in val) {
+    if (key !== 'options') {
+      var file = {};
+      file.src = utils.arrayify(val[key]);
+      file.dest = key;
+      files.push(file);
+    }
+  }
+  return files;
+}
+
+// this means that src, dest and files are absent,
+// so this might be file objects, like:
+//=> {'foo/': '*.js'}
+function filesObjects(val) {
+  var res = {options: val.options || {}};
+  res.files = toSrcDest(val);
+  return res;
+}
+
+function normalizeSrc(val) {
+  if (val.src) {
+    val.src = utils.arrayify(val.src);
+  }
+  return val;
+}
+
+function reduceFiles(files) {
+  return files.reduce(function (acc, ele) {
+    var res = normalize(ele);
+    acc.push.apply(acc, res.files);
+    return acc;
+  }, []);
+}
+
+
+function sortObjects(val) {
+  val.files = val.files.map(function (ele) {
+    var keys = Object.keys(ele);
+    var obj = {};
+    obj.options = ele.options || {};
+    if (ele.src) obj.src = ele.src;
+    if (ele.dest) obj.dest = ele.dest;
+    keys.forEach(function (key) {
+      if (key !== 'options' && !isFilesKey(key)) {
+        obj[key] = ele[key];
+      }
+    });
+    return obj;
+  });
+  return val;
+}
+
+/**
+ * Boolean checks
+ */
+
+function isFilesKey(key) {
+  return utils.has(['src', 'dest', 'files'], key);
+}
+
+function isValidSrc(val) {
+  return val && typeof val === 'string' || Array.isArray(val);
+}
+
+function isValidDest(val) {
+  return val && typeof val === 'string';
+}
+
+/**
+ * Expose `normalize`
+ */
+
+module.exports = normalize;
