@@ -1,7 +1,7 @@
 {
   "name": "normalize-config",
   "description": "Normalize a declarative configuration with any combination of src-dest mappings, files arrays, files objects and options into a consistent format so the config can easily be passed to any build system.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "homepage": "https://github.com/jonschlinkert/normalize-config",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/normalize-config",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "files": [
     "index.js",
-    "lib/"
+    "lib"
   ],
   "main": "index.js",
   "engines": {
@@ -21,7 +21,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "defaults-deep": "^0.2.3",
+    "extend-shallow": "^2.0.1",
     "kind-of": "^2.0.1"
   },
   "devDependencies": {
@@ -39,9 +39,9 @@
     "dest",
     "destination",
     "expand",
+    "files",
     "files array",
     "files object",
-    "files",
     "normalize",
     "options",
     "src",
