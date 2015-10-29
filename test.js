@@ -20,22 +20,22 @@ function inspect(config) {
 
 // change to `true` to log out results
 var normalize = inspect({debug: false});
-var configs = [
 
 
 describe('normalize', function () {
   it('should normalize src-dest mappings to a files array:', function () {
-    var config = normalize({
-      'foo/': '*.js',
-      'bar/': '*.md'
-    });
+    var foo = normalize({'foo/': '*.js', 'bar/': '*.md'});
+    var bar = normalize({'foo/': '*.js'});
 
-    assert(Array.isArray(config.files));
-    assert(config.files[0].src[0] === '*.js');
-    assert(config.files[0].dest === 'foo/');
+    assert(Array.isArray(foo.files));
+    assert(foo.files[0].src[0] === '*.js');
+    assert(foo.files[0].dest === 'foo/');
 
-    assert(config.files[1].src[0] === '*.md');
-    assert(config.files[1].dest === 'bar/');
+    assert(bar.files[0].src[0] === '*.js');
+    assert(bar.files[0].dest === 'foo/');
+
+    assert(foo.files[1].src[0] === '*.md');
+    assert(foo.files[1].dest === 'bar/');
   });
 
   it('should normalize src-dest mappings on a files object:', function () {
@@ -110,6 +110,96 @@ describe('normalize', function () {
     var config = normalize({options: {src: '*.js', dest: 'foo/'}});
     assert(Array.isArray(config.files[0].src));
     assert(config.files[0].src[0] === '*.js');
+  });
+
+  it('should not lose options when a second arg is passed:', function () {
+    var config = normalize({
+      options: {
+        expand: true,
+        cwd: 'a'
+      },
+      src: ['**/*.txt'],
+      dest: 'dest'
+    }, {});
+
+    assert.equal(typeof config.options, 'object');
+    assert.equal(Array.isArray(config.files), true);
+    assert(config.options.expand === true);
+    assert(config.options.cwd === 'a');
+    assert(config.files.length === 1);
+    assert(config.files[0].dest = 'dest');
+  });
+
+  it('should not lose options when a third arg is passed:', function () {
+    var config = normalize({
+      options: {
+        expand: true,
+        cwd: 'a'
+      },
+      src: ['**/*.txt'],
+      dest: 'dest'
+    }, {}, {});
+
+    assert.equal(typeof config.options, 'object');
+    assert.equal(Array.isArray(config.files), true);
+    assert(config.options.expand === true);
+    assert(config.options.cwd === 'a');
+    assert(config.files.length === 1);
+    assert(config.files[0].dest = 'dest');
+  });
+
+  it('should not lose options when dest is a string:', function () {
+    var config = normalize({
+      options: {
+        expand: true,
+        cwd: 'a'
+      },
+      src: ['**/*.txt']
+    }, 'dest', {});
+
+    assert.equal(typeof config.options, 'object');
+    assert.equal(Array.isArray(config.files), true);
+    assert(config.options.expand === true);
+    assert(config.options.cwd === 'a');
+    assert(config.files.length === 1);
+    assert(config.files[0].dest = 'dest');
+  });
+
+  it('should extend options defined on first and last args', function () {
+    var config = normalize({
+      options: {
+        expand: true,
+        cwd: 'a'
+      },
+      src: ['**/*.txt']
+    }, 'dest', {foo: 'bar'});
+
+    assert.equal(typeof config.options, 'object');
+    assert.equal(Array.isArray(config.files), true);
+    assert(config.options.foo === 'bar');
+    assert(config.options.expand === true);
+    assert(config.options.cwd === 'a');
+    assert(config.files.length === 1);
+    assert(config.files[0].dest = 'dest');
+  });
+
+  it('should extend options defined on first and second args', function () {
+    var config = normalize({
+      options: {
+        expand: true,
+        cwd: 'a'
+      },
+      src: ['**/*.txt'],
+      dest: 'dest'
+    }, {foo: 'bar'});
+
+    assert.equal(typeof config.options, 'object');
+    assert.equal(Array.isArray(config.files), true);
+    assert(config.options.foo === 'bar');
+    assert(config.options.expand === true);
+    assert(config.options.cwd === 'a');
+    assert(config.files.length === 1);
+    assert(config.files[0].dest = 'dest');
   });
 
   it('should convert an object with src-dest to a files array:', function () {

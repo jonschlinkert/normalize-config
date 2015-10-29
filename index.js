@@ -1,14 +1,13 @@
 'use strict';
 
 var typeOf = require('kind-of');
-var defaults = require('defaults-deep');
+var extend = require('extend-shallow');
 var utils = require('./lib/utils');
 
 function normalize(config, dest, opts) {
   if (arguments.length > 1) {
     config = toObject(config, dest, opts);
   }
-
   var context = {};
   if (utils.isObject(this) && this.options) {
     context = this.options;
@@ -42,19 +41,21 @@ function normalize(config, dest, opts) {
 
 function toObject(src, dest, options) {
   var config = {};
+
   if (utils.isObject(src)) {
     config = src;
+    config.options = config.options || {};
   }
 
   if (isValidSrc(src)) {
     config.src = src;
   }
 
-  if (utils.isObject(dest)) {
-    config.options = dest;
+  if (utils.isObject(dest) && !dest.dest && !dest.src) {
+    config.options = extend({}, config.options, dest);
     dest = '';
   } else if (utils.isObject(options)) {
-    config.options = options;
+    config.options = extend({}, config.options, options);
   }
 
   if (isValidDest(dest)) {
@@ -161,7 +162,7 @@ function normalizeOptions(obj) {
 function copyOptions(config, context) {
   var ctx = context.options || context;
   if (utils.isObject(ctx) && ctx) {
-    config.options = defaults(config.options, ctx);
+    config.options = extend({}, ctx, config.options);
   }
   return config;
 }
