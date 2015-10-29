@@ -10,6 +10,8 @@
   "laxbreak": true,
   "laxcomma": false,
   "mocha": true,
+  "name": "jshint",
+  "namespace": true,
   "newcap": true,
   "noarg": true,
   "node": true,
