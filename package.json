@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "arr-diff": "^1.1.0",
+    "arr-flatten": "^1.0.1",
     "clone-deep": "^0.2.2",
     "defaults-deep": "^0.2.3",
     "define-property": "^0.1.3",

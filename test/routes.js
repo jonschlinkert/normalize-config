@@ -22,7 +22,7 @@ var expected = function (name) {
 var writeExpected = helpers.expected('route');
 
 describe('routes:', function () {
-  it.only('should use the route to re-write the destination path.', function () {
+  it('should use the route to re-write the destination path.', function () {
     var fixture = {
       options: {
         expand: true,

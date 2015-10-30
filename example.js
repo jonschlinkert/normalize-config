@@ -128,15 +128,15 @@ var tasks = {
 
 
 var target = new Target({
-  base: 'bar',
   pipeline: [],
-  options: {a: 'b'},
-  expand: true,
+  options: {a: 'b', dirname: function () { console.log(arguments); }},
+  expand: ':dest/:dirname',
+  flatten: true,
   src: 'fixtures/files/**/*.js',
   dest: 'dist/'
 });
 
-console.log(target)
+console.log(target.files)
 
 // var config = new Config(tasks);
 // var docs = config.task('assemble.docs');
