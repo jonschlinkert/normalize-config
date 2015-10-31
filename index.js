@@ -241,21 +241,35 @@ function formatObject(val) {
     return val;
   }
 
-  var len = val.files.length, i = -1;
+  var res = { options: val.options };
+  res.files = val.files;
+  for (var key in val) {
+    if (key === 'files' || key === 'options') {
+      continue;
+    }
+    res[key] = val[key];
+  }
+
+  if (typeof res.options.cwd === 'undefined') {
+    res.options.cwd = '';
+  }
+
+  var len = res.files.length, i = -1;
   while (++i < len) {
-    var ele = val.files[i];
+    var ele = res.files[i];
     var obj = {};
 
-    obj.options = ele.options;
+    obj.options = ele.options || res.options || {};
     obj.src = ele.src || [];
     obj.dest = ele.dest || '';
 
-    if (typeof obj.options === 'undefined') {
-      obj.options = val.options || {};
+    if (typeof obj.options.cwd === 'undefined') {
+      obj.options.cwd = '';
     }
-    val.files[i] = obj;
+
+    res.files[i] = obj;
   }
-  return val;
+  return res;
 }
 
 /**

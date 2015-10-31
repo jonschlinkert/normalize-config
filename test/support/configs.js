@@ -1,4 +1,4 @@
-var normalize = require('./');
+var normalize = require('../..');
 var configs = [
   ['*.js'],
   ['*.js', 'foo/'],
@@ -8,7 +8,7 @@ var configs = [
   [['*.js']],
   [['foo', 'bar', '*.js']],
   [{'foo/': '*.js', 'bar/': '*.md'}],
-  [{'foo/': '*.js', cwd: 'a'}],
+  [{'foo/': '*.js', cwd: 'a', a: 'b'}],
   [{'foo/': '*.js'}],
   [{'': '*.js'}],
   [{'a/b/c': '*.js'}, {cwd: 'foo'}],
@@ -23,8 +23,9 @@ var configs = [
   [{files: [{'foo/': '*.js', cwd: 'f'}]}],
   [{files: {'dist/': ['*.js']}}],
   [{files: {'foo/': '*.js', cwd: 'e'}}],
-  [{options: {src: '*.js', dest: 'foo/'}}],
+  [{options: {src: '*.js', dest: 'foo/', a: 'b'}}],
 ].forEach(function (config) {
   var res = normalize.apply(null, config);
-  console.log(res.files);
+  console.log(res);
+  // console.log(res.files);
 });
