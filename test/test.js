@@ -7,7 +7,7 @@ var should = require('should');
 
 // wrap `normalize` to log out results
 function inspect(config) {
-  var fn = require('./');
+  var fn = require('..');
   config = config || {};
   return function (val) {
     var config = fn.apply(fn, arguments);
@@ -23,6 +23,18 @@ var normalize = inspect({debug: false});
 
 
 describe('normalize', function () {
+  it('should normalize src-dest mappings to a files array:', function (cb) {
+    try {
+      normalize();
+      cb(new Error('expected an error'));
+    } catch(err) {
+      assert(err);
+      assert(err.message);
+      assert(err.message === 'unsupported argument type: undefined');
+      cb();
+    }
+  });
+
   it('should normalize src-dest mappings to a files array:', function () {
     var foo = normalize({'foo/': '*.js', 'bar/': '*.md'});
     var bar = normalize({'foo/': '*.js'});
@@ -86,6 +98,12 @@ describe('normalize', function () {
 
   it('should convert the second arg to dest when it is a string:', function () {
     var config = normalize('*.js', 'foo/');
+    assert(config.files[0].src[0] === '*.js');
+    assert(config.files[0].dest === 'foo/');
+  });
+
+  it('should dest from the second arg when it is an object:', function () {
+    var config = normalize('*.js', {dest: 'foo/'});
     assert(config.files[0].src[0] === '*.js');
     assert(config.files[0].dest === 'foo/');
   });
@@ -262,7 +280,7 @@ describe('normalize', function () {
 
     it('should extend "context" options onto config:', function () {
       var ctx = {options: {process: true}};
-      var fn = require('./');
+      var fn = require('..');
       var config = fn.call(ctx, {dest: 'foo/', src: '*.js'});
 
       assert(Array.isArray(config.files));
@@ -274,7 +292,7 @@ describe('normalize', function () {
 
     it('should not format files objects when `format` is false:', function () {
       var ctx = {options: {format: false}};
-      var fn = require('./');
+      var fn = require('..');
       var config = fn.call(ctx, {dest: 'foo/', src: '*.js'});
 
       assert(Array.isArray(config.files));
