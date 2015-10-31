@@ -8,6 +8,7 @@ function normalize(config, dest, opts) {
   if (arguments.length > 1) {
     config = toObject(config, dest, opts);
   }
+
   var context = {};
   if (utils.isObject(this) && this.options) {
     context = this.options;
@@ -25,13 +26,12 @@ function normalize(config, dest, opts) {
       res = normalizeArray(config);
       break;
     default: {
-      res = config;
-      break;
+      throw new TypeError('unsupported argument type: ' + config);
     }
   }
 
   // copy `context` options onto config root
-  res = copyOptions(res, context);
+  copyOptions(res, context);
   return formatObject(res);
 }
 
@@ -42,25 +42,24 @@ function normalize(config, dest, opts) {
 function toObject(src, dest, options) {
   var config = {};
 
+  if (utils.isObject(dest)) {
+    options = dest;
+    dest = null;
+  }
+
   if (utils.isObject(src)) {
     config = src;
-    config.options = config.options || {};
   }
 
   if (isValidSrc(src)) {
     config.src = src;
   }
 
-  if (utils.isObject(dest) && !dest.dest && !dest.src) {
-    config.options = extend({}, config.options, dest);
-    dest = '';
-  } else if (utils.isObject(options)) {
-    config.options = extend({}, config.options, options);
-  }
-
-  if (isValidDest(dest)) {
+  if (typeof dest === 'string') {
     config.dest = dest;
   }
+
+  config.options = extend({}, config.options, options);
   return config;
 }
 
@@ -80,7 +79,7 @@ function normalizeObject(val) {
     return toFiles(val);
   }
 
-  if (!('files' in val)) {
+  if (!val.hasOwnProperty('files')) {
     return filesObjects(val);
   }
 
@@ -124,7 +123,7 @@ function normalizeFiles(val) {
 }
 
 /**
- * Normalize all of the objects in a `files` array.
+ * Normalize all objects in a `files` array.
  *
  * @param {Array} `files`
  * @return {Array}
@@ -133,23 +132,20 @@ function normalizeFiles(val) {
 function reduceFiles(files) {
   return files.reduce(function (acc, ele) {
     var res = normalize(ele);
-    acc.push.apply(acc, res.files);
-    return acc;
+    return acc.concat(res.files);
   }, []);
 }
 
 /**
- * Options
+ * Move reserved options properties from `obj` to `obj.options`
  */
 
 function normalizeOptions(obj) {
   for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      if (utils.optsKeys.indexOf(key) > -1) {
-        obj.options = obj.options || {};
-        obj.options[key] = obj[key];
-        delete obj[key];
-      }
+    if (utils.optsKeys.indexOf(key) > -1) {
+      obj.options = obj.options || {};
+      obj.options[key] = obj[key];
+      delete obj[key];
     }
   }
   return obj;
@@ -182,7 +178,7 @@ function copyOptions(config, context) {
 function toFiles(val) {
   var config = {files: [normalizeSrc(val)]};
   for (var key in val) {
-    if (val.hasOwnProperty(key) && !isFilesKey(key)) {
+    if (!isFilesKey(key)) {
       config[key] = val[key];
     }
   }
@@ -212,7 +208,7 @@ function filesObjects(val) {
       var file = {};
       if (val.options) file.options = val.options;
       file.src = utils.arrayify(val[key]);
-      file.dest = key;
+      file.dest = key || '';
       res.files.push(file);
     }
   }
@@ -245,23 +241,20 @@ function formatObject(val) {
     return val;
   }
 
-  val.files = val.files.map(function (ele) {
-    var keys = Object.keys(ele);
+  var len = val.files.length, i = -1;
+  while (++i < len) {
+    var ele = val.files[i];
     var obj = {};
-    if (ele.options) obj.options = ele.options;
-    if ('src' in ele) obj.src = ele.src;
-    if ('dest' in ele) {
-      obj.dest = ele.dest;
-    } else {
-      obj.dest = '';
+
+    obj.options = ele.options;
+    obj.src = ele.src || [];
+    obj.dest = ele.dest || '';
+
+    if (typeof obj.options === 'undefined') {
+      obj.options = val.options || {};
     }
-    keys.forEach(function (key) {
-      if (key !== 'options' && !isFilesKey(key)) {
-        obj[key] = ele[key];
-      }
-    });
-    return obj;
-  });
+    val.files[i] = obj;
+  }
   return val;
 }
 
@@ -270,15 +263,11 @@ function formatObject(val) {
  */
 
 function isFilesKey(key) {
-  return utils.has(['src', 'dest', 'files'], key);
+  return ['src', 'dest', 'files'].indexOf(key) > -1;
 }
 
 function isValidSrc(val) {
-  return val && typeof val === 'string' || Array.isArray(val);
-}
-
-function isValidDest(val) {
-  return val && typeof val === 'string';
+  return typeof val === 'string' || Array.isArray(val);
 }
 
 /**
