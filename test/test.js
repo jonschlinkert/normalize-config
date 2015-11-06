@@ -1,9 +1,10 @@
 'use strict';
 
-/* deps: mocha */
+require('mocha');
+require('should');
+var path = require('path');
 var util = require('util');
 var assert = require('assert');
-var should = require('should');
 
 // wrap `normalize` to log out results
 function inspect(config) {
@@ -21,6 +22,16 @@ function inspect(config) {
 // change to `true` to log out results
 var normalize = inspect({debug: false});
 
+function toFile(file) {
+  file = file || {};
+  if (typeof file === 'string') {
+    var filepath = file;
+    file = { path: filepath };
+  }
+  file.relative = path.relative(process.cwd(), file.path);
+  file.basename = path.basename(file.path);
+  return file;
+}
 
 describe('normalize', function() {
   it('should throw an error on invalid arguments', function(cb) {
@@ -48,6 +59,21 @@ describe('normalize', function() {
 
     assert(foo.files[1].src[0] === '*.md');
     assert(foo.files[1].dest === 'bar/');
+  });
+
+  it.only('should normalize a file object:', function() {
+    var file = toFile(path.resolve('a/b/c.js'));
+
+    console.log(normalize(file));
+    // assert(Array.isArray(foo.files));
+    // assert(foo.files[0].src[0] === '*.js');
+    // assert(foo.files[0].dest === 'foo/');
+
+    // assert(bar.files[0].src[0] === '*.js');
+    // assert(bar.files[0].dest === 'foo/');
+
+    // assert(foo.files[1].src[0] === '*.md');
+    // assert(foo.files[1].dest === 'bar/');
   });
 
   it('should normalize src-dest mappings on a files object:', function() {

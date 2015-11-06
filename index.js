@@ -4,14 +4,14 @@ var typeOf = require('kind-of');
 var extend = require('extend-shallow');
 var utils = require('./lib/utils');
 
-function normalize(config, dest, opts) {
+function normalize(config, dest, options) {
   if (arguments.length > 1) {
-    config = toObject(config, dest, opts);
+    config = toObject(config, dest, options);
   }
 
-  var context = {};
+  var thisArg = {};
   if (utils.isObject(this) && this.options) {
-    context = this.options;
+    thisArg = this.options;
   }
 
   var res = null;
@@ -30,8 +30,8 @@ function normalize(config, dest, opts) {
     }
   }
 
-  // copy `context` options onto config root
-  copyOptions(res, context);
+  // copy `thisArg` options onto config root
+  copyOptions(res, thisArg);
   return formatObject(res);
 }
 
@@ -68,6 +68,10 @@ function toObject(src, dest, options) {
  */
 
 function normalizeObject(val) {
+  if (val.hasOwnProperty('path')) {
+    val.src = val.path;
+  }
+
   val = normalizeOptions(val);
 
   // if src/dest are on options, move them to root
@@ -130,7 +134,7 @@ function normalizeFiles(val) {
  */
 
 function reduceFiles(files) {
-  return files.reduce(function (acc, ele) {
+  return files.reduce(function(acc, ele) {
     var res = normalize(ele);
     return acc.concat(res.files);
   }, []);
