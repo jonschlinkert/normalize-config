@@ -22,12 +22,13 @@ function inspect(config) {
 // change to `true` to log out results
 var normalize = inspect({debug: false});
 
-function toFile(file) {
+function toFile(file, dest) {
   file = file || {};
   if (typeof file === 'string') {
     var filepath = file;
     file = { path: filepath };
   }
+  if (dest) file.dest = dest;
   file.relative = path.relative(process.cwd(), file.path);
   file.basename = path.basename(file.path);
   return file;
@@ -61,19 +62,11 @@ describe('normalize', function() {
     assert(foo.files[1].dest === 'bar/');
   });
 
-  it.only('should normalize a file object:', function() {
-    var file = toFile(path.resolve('a/b/c.js'));
-
-    console.log(normalize(file));
-    // assert(Array.isArray(foo.files));
-    // assert(foo.files[0].src[0] === '*.js');
-    // assert(foo.files[0].dest === 'foo/');
-
-    // assert(bar.files[0].src[0] === '*.js');
-    // assert(bar.files[0].dest === 'foo/');
-
-    // assert(foo.files[1].src[0] === '*.md');
-    // assert(foo.files[1].dest === 'bar/');
+  it('should normalize a file object:', function() {
+    var config = normalize(toFile(path.resolve('a/b/c.js'), 'dist/'));
+    assert(Array.isArray(config.files));
+    assert(config.files[0].src[0] === path.resolve('a/b/c.js'));
+    assert(config.files[0].dest === 'dist/');
   });
 
   it('should normalize src-dest mappings on a files object:', function() {
