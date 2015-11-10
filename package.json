@@ -1,7 +1,7 @@
 {
   "name": "normalize-config",
   "description": "Normalize a declarative configuration with any combination of src-dest mappings, files arrays, files objects and options into a consistent format so the config can easily be passed to any build system.",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "homepage": "https://github.com/jonschlinkert/normalize-config",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/normalize-config",
@@ -25,6 +25,7 @@
     "kind-of": "^2.0.1"
   },
   "devDependencies": {
+    "ansi-yellow": "^0.1.1",
     "gulp": "^3.9.0",
     "gulp-eslint": "^1.0.0",
     "gulp-istanbul": "^0.10.0",
