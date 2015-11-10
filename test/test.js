@@ -149,6 +149,13 @@ describe('normalize', function() {
     assert(config.files[0].src[0] === '*.js');
   });
 
+  it('should flatten nested "options.options" objects:', function() {
+    var config = normalize('*.js', 'dist/', {options: {cwd: 'foo'}});
+    assert(config.files[0].options);
+    assert(!config.files[0].options.options);
+    assert(config.files[0].options.cwd === 'foo');
+  });
+
   it('should not lose options when a second arg is passed:', function() {
     var config = normalize({
       options: {
