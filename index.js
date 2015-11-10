@@ -10,11 +10,12 @@ function normalize(config, dest, options) {
   }
 
   var thisArg = {};
+  var res = null;
+
   if (utils.isObject(this) && this.options) {
     thisArg = this.options;
   }
 
-  var res = null;
   switch(typeOf(config)) {
     case 'string':
       res = normalizeString(config);
@@ -40,10 +41,14 @@ function normalize(config, dest, options) {
  */
 
 function toObject(src, dest, options) {
+  if (!utils.isObject(options)) {
+    options = {};
+  }
+
   var config = {};
 
   if (utils.isObject(dest)) {
-    options = dest;
+    options = extend({}, options, dest);
     dest = null;
   }
 
@@ -57,6 +62,11 @@ function toObject(src, dest, options) {
 
   if (typeof dest === 'string') {
     config.dest = dest;
+  }
+
+  if (options.hasOwnProperty('options')) {
+    options = extend({}, options, options.options);
+    delete options.options;
   }
 
   config.options = extend({}, config.options, options);
