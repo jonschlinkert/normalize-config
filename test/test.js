@@ -85,6 +85,17 @@ describe('normalize', function() {
     assert(config.files[1].dest === 'bar/');
   });
 
+  it('should throw an error when `files` is an invalid type', function(cb) {
+    try {
+      normalize({files: 'foo'});
+      cb(new Error('expected an error'));
+    } catch (err) {
+      assert(err);
+      assert(err.message === 'expected "files" to be an array or object');
+      cb();
+    }
+  });
+
   it('should normalize the first argument to src when it is a string:', function() {
     var config = normalize('*.js');
     assert(config.files[0].src[0] === '*.js');

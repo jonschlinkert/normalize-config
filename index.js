@@ -102,9 +102,11 @@ function normalizeObject(val) {
     return val;
   }
 
-  if (utils.isObject(val.files)) {
-    val.files = normalizeFiles(val);
+  if (val.files && !utils.isObject(val.files)) {
+    throw new TypeError('expected "files" to be an array or object');
   }
+
+  val.files = normalizeFiles(val);
   return val;
 }
 
@@ -132,7 +134,7 @@ function normalizeArray(arr) {
  */
 
 function normalizeFiles(val) {
-  var res = normalize(val.files || val);
+  var res = normalize(val.files);
   return res.files;
 }
 
@@ -169,11 +171,9 @@ function normalizeOptions(obj) {
  * Copy options
  */
 
-function copyOptions(config, context) {
-  var ctx = context.options || context;
-  if (utils.isObject(ctx) && ctx) {
-    config.options = extend({}, ctx, config.options);
-  }
+function copyOptions(config, thisArg) {
+  var ctx = thisArg.options || thisArg;
+  config.options = extend({}, ctx, config.options);
   return config;
 }
 
@@ -222,7 +222,7 @@ function filesObjects(val) {
       var file = {};
       if (val.options) file.options = val.options;
       file.src = utils.arrayify(val[key]);
-      file.dest = key || '';
+      file.dest = key;
       res.files.push(file);
     }
   }
@@ -264,23 +264,14 @@ function formatObject(val) {
     res[key] = val[key];
   }
 
-  if (typeof res.options.cwd === 'undefined') {
-    res.options.cwd = '';
-  }
-
   var len = res.files.length, i = -1;
   while (++i < len) {
     var ele = res.files[i];
     var obj = {};
 
-    obj.options = ele.options || res.options || {};
+    obj.options = ele.options || res.options;
     obj.src = ele.src || [];
     obj.dest = ele.dest || '';
-
-    if (typeof obj.options.cwd === 'undefined') {
-      obj.options.cwd = '';
-    }
-
     res.files[i] = obj;
   }
   return res;
