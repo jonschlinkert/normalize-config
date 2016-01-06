@@ -53,6 +53,8 @@
   "verb": {
     "related": {
       "list": [
+        "scaffold",
+        "boilerplate",
         "expand-config",
         "expand-files",
         "expand-target",
