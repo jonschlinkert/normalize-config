@@ -54,8 +54,8 @@
       "list": [
         "expand-config",
         "expand-files",
-        "expand-task",
-        "expand-target"
+        "expand-target",
+        "expand-task"
       ]
     }
   }
